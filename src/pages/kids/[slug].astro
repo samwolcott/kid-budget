@@ -174,6 +174,75 @@ const demoJson = JSON.stringify(demoKids);
     </form>
   </dialog>
 
+  <dialog
+    id="new-goal-dialog"
+    class="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl bg-white p-0 shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
+  >
+    <form id="new-goal-form" class="p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-emerald-600">
+            New savings goal
+          </p>
+          <h2 class="mt-1 text-2xl font-black">What are you saving for?</h2>
+          <p class="mt-2 text-sm leading-6 text-slate-500">
+            Pick something exciting and set the amount you need.
+          </p>
+        </div>
+        <button id="close-new-goal-dialog" type="button" class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200" aria-label="Close">×</button>
+      </div>
+
+      <label class="mt-6 block text-sm font-bold text-slate-700">
+        Emoji
+        <input name="emoji" type="text" maxlength="8" value="🎯" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-2xl outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100" />
+      </label>
+
+      <label class="mt-4 block text-sm font-bold text-slate-700">
+        Goal name
+        <input name="name" type="text" maxlength="80" required placeholder="Nintendo Switch Game" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100" />
+      </label>
+
+      <label class="mt-4 block text-sm font-bold text-slate-700">
+        Target price
+        <span class="mt-2 flex items-center rounded-xl border border-slate-200 px-4 transition focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100">
+          <span class="font-bold text-slate-400">$</span>
+          <input name="target" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="60.00" class="min-w-0 w-full bg-transparent px-2 py-3 outline-none" />
+        </span>
+      </label>
+
+      <p id="new-goal-error" class="mt-4 hidden rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700"></p>
+      <button type="submit" class="mt-6 w-full rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white transition hover:bg-emerald-700">Create Goal</button>
+    </form>
+  </dialog>
+
+  <dialog
+    id="allocate-goal-dialog"
+    class="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl bg-white p-0 shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
+  >
+    <form id="allocate-goal-form" class="p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-emerald-600">Allocate savings</p>
+          <h2 id="allocate-goal-title" class="mt-1 text-2xl font-black">Add money to goal</h2>
+          <p id="allocate-goal-help" class="mt-2 text-sm leading-6 text-slate-500"></p>
+        </div>
+        <button id="close-allocate-goal-dialog" type="button" class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200" aria-label="Close">×</button>
+      </div>
+
+      <label class="mt-6 block text-sm font-bold text-slate-700">
+        Amount to add
+        <span class="mt-2 flex items-center rounded-xl border border-slate-200 px-4 transition focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100">
+          <span class="font-bold text-slate-400">$</span>
+          <input name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="5.00" class="min-w-0 w-full bg-transparent px-2 py-3 outline-none" />
+        </span>
+      </label>
+
+      <input id="allocate-goal-id" name="goalId" type="hidden" />
+      <p id="allocate-goal-error" class="mt-4 hidden rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700"></p>
+      <button type="submit" class="mt-6 w-full rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white transition hover:bg-emerald-700">Add to Goal</button>
+    </form>
+  </dialog>
+
   <div
     id="prototype-toast"
     class="pointer-events-none fixed bottom-5 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 translate-y-5 rounded-2xl bg-slate-950 px-5 py-4 text-center text-sm font-bold text-white opacity-0 shadow-2xl transition-all duration-200"
@@ -196,6 +265,8 @@ const demoJson = JSON.stringify(demoKids);
     } from "../../types";
 
     import {
+      allocateToGoal,
+      createGoal,
       createPurchaseRequest,
       loadState,
       saveState,
@@ -235,6 +306,41 @@ const demoJson = JSON.stringify(demoKids);
 
     const purchaseError = document.querySelector(
       "#purchase-error",
+    );
+
+    const newGoalDialog = document.querySelector(
+      "#new-goal-dialog",
+    );
+    const newGoalForm = document.querySelector(
+      "#new-goal-form",
+    );
+    const closeNewGoalDialog = document.querySelector(
+      "#close-new-goal-dialog",
+    );
+    const newGoalError = document.querySelector(
+      "#new-goal-error",
+    );
+
+    const allocateGoalDialog = document.querySelector(
+      "#allocate-goal-dialog",
+    );
+    const allocateGoalForm = document.querySelector(
+      "#allocate-goal-form",
+    );
+    const closeAllocateGoalDialog = document.querySelector(
+      "#close-allocate-goal-dialog",
+    );
+    const allocateGoalTitle = document.querySelector(
+      "#allocate-goal-title",
+    );
+    const allocateGoalHelp = document.querySelector(
+      "#allocate-goal-help",
+    );
+    const allocateGoalId = document.querySelector(
+      "#allocate-goal-id",
+    );
+    const allocateGoalError = document.querySelector(
+      "#allocate-goal-error",
     );
 
     let toastTimeout: number | undefined;
@@ -439,10 +545,10 @@ const demoJson = JSON.stringify(demoKids);
 
                 <button
                   type="button"
-                  class="inline-flex min-h-10 items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-                  data-goal-id="${goal.id}"
+                  class="inline-flex min-h-10 items-center justify-center rounded-xl px-4 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${remaining === 0 ? "cursor-default bg-emerald-50 text-emerald-700" : "bg-emerald-600 text-white hover:bg-emerald-700"}"
+                  ${remaining === 0 ? "disabled" : `data-goal-id="${goal.id}"`}
                 >
-                  Add money
+                  ${remaining === 0 ? "Complete 🎉" : "Add money"}
                 </button>
               </div>
             </article>
@@ -719,6 +825,45 @@ const demoJson = JSON.stringify(demoKids);
       }, 0);
     }
 
+    function openNewGoalDialog(): void {
+      if (!(newGoalDialog instanceof HTMLDialogElement)) return;
+      if (newGoalError instanceof HTMLElement) {
+        newGoalError.classList.add("hidden");
+        newGoalError.textContent = "";
+      }
+      if (newGoalForm instanceof HTMLFormElement) newGoalForm.reset();
+      newGoalDialog.showModal();
+      window.setTimeout(() => newGoalForm?.querySelector<HTMLInputElement>('[name="name"]')?.focus(), 0);
+    }
+
+    function openAllocateGoalDialog(goalId: string): void {
+      if (!currentKid || !(allocateGoalDialog instanceof HTMLDialogElement)) return;
+      const goal = currentKid.goals.find((item) => item.id === goalId);
+      if (!goal) return;
+
+      const allocated = currentKid.goals.reduce((sum, item) => sum + item.saved, 0);
+      const available = Math.max(0, currentKid.buckets.saving - allocated);
+      const remaining = Math.max(0, goal.target - goal.saved);
+
+      if (allocateGoalTitle instanceof HTMLElement) {
+        allocateGoalTitle.textContent = `Add to ${goal.name}`;
+      }
+      if (allocateGoalHelp instanceof HTMLElement) {
+        allocateGoalHelp.textContent = `${money.format(available)} is available to allocate. This goal needs ${money.format(remaining)} more.`;
+      }
+      if (allocateGoalId instanceof HTMLInputElement) allocateGoalId.value = goal.id;
+      if (allocateGoalError instanceof HTMLElement) {
+        allocateGoalError.classList.add("hidden");
+        allocateGoalError.textContent = "";
+      }
+      if (allocateGoalForm instanceof HTMLFormElement) {
+        const amount = allocateGoalForm.querySelector<HTMLInputElement>('[name="amount"]');
+        if (amount) amount.value = "";
+      }
+      allocateGoalDialog.showModal();
+      window.setTimeout(() => allocateGoalForm?.querySelector<HTMLInputElement>('[name="amount"]')?.focus(), 0);
+    }
+
     function attachActionListeners(): void {
       document
         .querySelector<HTMLElement>(
@@ -750,26 +895,17 @@ const demoJson = JSON.stringify(demoKids);
         });
 
       document
-        .querySelectorAll<HTMLElement>(
-          "[data-goal-id]",
-        )
+        .querySelectorAll<HTMLElement>("[data-goal-id]")
         .forEach((button) => {
           button.addEventListener("click", () => {
-            showToast(
-              "Goal allocation is coming next.",
-            );
+            const goalId = button.dataset.goalId;
+            if (goalId) openAllocateGoalDialog(goalId);
           });
         });
 
       document
-        .querySelector<HTMLElement>(
-          "[data-new-goal]",
-        )
-        ?.addEventListener("click", () => {
-          showToast(
-            "Goal creation is coming next.",
-          );
-        });
+        .querySelector<HTMLElement>("[data-new-goal]")
+        ?.addEventListener("click", openNewGoalDialog);
     }
 
     closePurchaseDialog?.addEventListener(
@@ -848,6 +984,71 @@ const demoJson = JSON.stringify(demoKids);
         }
       },
     );
+
+    closeNewGoalDialog?.addEventListener("click", () => {
+      if (newGoalDialog instanceof HTMLDialogElement) newGoalDialog.close();
+    });
+
+    newGoalDialog?.addEventListener("click", (event) => {
+      if (newGoalDialog instanceof HTMLDialogElement && event.target === newGoalDialog) newGoalDialog.close();
+    });
+
+    closeAllocateGoalDialog?.addEventListener("click", () => {
+      if (allocateGoalDialog instanceof HTMLDialogElement) allocateGoalDialog.close();
+    });
+
+    allocateGoalDialog?.addEventListener("click", (event) => {
+      if (allocateGoalDialog instanceof HTMLDialogElement && event.target === allocateGoalDialog) allocateGoalDialog.close();
+    });
+
+    newGoalForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!(newGoalForm instanceof HTMLFormElement) || !currentState || !currentKid) return;
+      const data = new FormData(newGoalForm);
+      try {
+        createGoal(
+          currentState,
+          currentKid.slug,
+          String(data.get("name") ?? ""),
+          Number(data.get("target")),
+          String(data.get("emoji") ?? "🎯"),
+        );
+        saveState(currentState);
+        currentKid = currentState.kids[currentKid.slug];
+        renderDashboard(currentKid);
+        newGoalDialog instanceof HTMLDialogElement && newGoalDialog.close();
+        showToast("New savings goal created! 🎯");
+      } catch (error) {
+        if (newGoalError instanceof HTMLElement) {
+          newGoalError.textContent = error instanceof Error ? error.message : "Unable to create the goal.";
+          newGoalError.classList.remove("hidden");
+        }
+      }
+    });
+
+    allocateGoalForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!(allocateGoalForm instanceof HTMLFormElement) || !currentState || !currentKid) return;
+      const data = new FormData(allocateGoalForm);
+      try {
+        allocateToGoal(
+          currentState,
+          currentKid.slug,
+          String(data.get("goalId") ?? ""),
+          Number(data.get("amount")),
+        );
+        saveState(currentState);
+        currentKid = currentState.kids[currentKid.slug];
+        renderDashboard(currentKid);
+        allocateGoalDialog instanceof HTMLDialogElement && allocateGoalDialog.close();
+        showToast("Savings added to your goal! 🎉");
+      } catch (error) {
+        if (allocateGoalError instanceof HTMLElement) {
+          allocateGoalError.textContent = error instanceof Error ? error.message : "Unable to add money to the goal.";
+          allocateGoalError.classList.remove("hidden");
+        }
+      }
+    });
 
     if (
       dashboard instanceof HTMLElement &&

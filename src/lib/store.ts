@@ -265,3 +265,104 @@ export function createPurchaseRequest(
 
   return request;
 }
+
+export function createGoal(
+  state: FamilyBankState,
+  slug: string,
+  name: string,
+  target: number,
+  emoji: string,
+): void {
+  const kid = state.kids[slug];
+
+  if (!kid) {
+    throw new Error("Kid account not found.");
+  }
+
+  const trimmedName = name.trim();
+  const trimmedEmoji = emoji.trim();
+
+  if (!trimmedName) {
+    throw new Error("Give your goal a name.");
+  }
+
+  if (!Number.isFinite(target) || target <= 0) {
+    throw new Error("Enter a target greater than $0.");
+  }
+
+  kid.goals.push({
+    id: crypto.randomUUID(),
+    name: trimmedName,
+    emoji: trimmedEmoji || "🎯",
+    saved: 0,
+    target: roundCurrency(target),
+  });
+}
+
+export function allocateToGoal(
+  state: FamilyBankState,
+  slug: string,
+  goalId: string,
+  amount: number,
+): void {
+  const kid = state.kids[slug];
+
+  if (!kid) {
+    throw new Error("Kid account not found.");
+  }
+
+  const goal = kid.goals.find(
+    (item) => item.id === goalId,
+  );
+
+  if (!goal) {
+    throw new Error("Savings goal not found.");
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error("Enter an amount greater than $0.");
+  }
+
+  const allocatedSavings = kid.goals.reduce(
+    (sum, item) => sum + item.saved,
+    0,
+  );
+
+  const availableSavings = roundCurrency(
+    kid.buckets.saving - allocatedSavings,
+  );
+
+  const remainingForGoal = roundCurrency(
+    goal.target - goal.saved,
+  );
+
+  if (remainingForGoal <= 0) {
+    throw new Error("That goal is already complete.");
+  }
+
+  if (amount > availableSavings) {
+    throw new Error(
+      `You only have $${availableSavings.toFixed(2)} available to allocate.`,
+    );
+  }
+
+  if (amount > remainingForGoal) {
+    throw new Error(
+      `You only need $${remainingForGoal.toFixed(2)} more to complete this goal.`,
+    );
+  }
+
+  goal.saved = roundCurrency(
+    goal.saved + amount,
+  );
+
+  kid.transactions.unshift({
+    id: crypto.randomUUID(),
+    date: today(),
+    description: `Added to ${goal.name}`,
+    amount: roundCurrency(amount),
+    bucket: "saving",
+    type: "goal",
+  });
+}
+
