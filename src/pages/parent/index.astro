@@ -10,7 +10,7 @@ const demoJson = JSON.stringify(demoKids);
     <header class="mb-8 flex items-end justify-between gap-4">
       <div>
         <a
-          href="/"
+          href={`${import.meta.env.BASE_URL}`}
           class="text-sm font-bold text-slate-500"
         >
           ← The Family Bank
@@ -897,7 +897,7 @@ const demoJson = JSON.stringify(demoKids);
 
             return `
               <a
-                href="/kids/${kid.slug}"
+                href="${import.meta.env.BASE_URL}kids/${kid.slug}/"
                 class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div class="flex items-center gap-3">

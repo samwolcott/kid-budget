@@ -25,7 +25,7 @@ import Layout from "../layouts/Layout.astro";
 
     <div class="mt-10 grid gap-4">
       <a
-        href="/kids/judah"
+        href={`${import.meta.env.BASE_URL}kids/judah/`}
         class="flex items-center gap-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
       >
         <span class="text-4xl">😎</span>
@@ -46,7 +46,7 @@ import Layout from "../layouts/Layout.astro";
       </a>
 
       <a
-        href="/kids/max"
+        href={`${import.meta.env.BASE_URL}kids/max/`}
         class="flex items-center gap-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
       >
         <span class="text-4xl">🤘</span>
@@ -68,7 +68,7 @@ import Layout from "../layouts/Layout.astro";
     </div>
 
     <a
-      href="/parent"
+      href={`${import.meta.env.BASE_URL}parent/`}
       class="mx-auto mt-8 rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
     >
       🔒 Parent Dashboard

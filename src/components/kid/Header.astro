@@ -28,7 +28,7 @@ const { name, emoji } = Astro.props;
   </div>
 
   <a
-    href="/"
+    href={`${import.meta.env.BASE_URL}`}
     class="inline-flex min-h-11 items-center justify-center rounded-xl bg-white px-4 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
   >
     Switch
