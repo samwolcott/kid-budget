@@ -81,6 +81,99 @@ const demoJson = JSON.stringify(demoKids);
     </footer>
   </main>
 
+  <dialog
+    id="purchase-dialog"
+    class="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl bg-white p-0 shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
+  >
+    <form id="purchase-form" class="p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">
+            Record a purchase
+          </p>
+
+          <h2 class="mt-1 text-2xl font-black">
+            What did you buy?
+          </h2>
+
+          <p class="mt-2 text-sm leading-6 text-slate-500">
+            Your parent will approve it before any money leaves your account.
+          </p>
+        </div>
+
+        <button
+          id="close-purchase-dialog"
+          type="button"
+          class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200"
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+
+      <label class="mt-6 block text-sm font-bold text-slate-700">
+        What was it?
+        <input
+          id="purchase-description"
+          name="description"
+          type="text"
+          maxlength="80"
+          required
+          placeholder="Ice cream"
+          class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+        />
+      </label>
+
+      <label class="mt-4 block text-sm font-bold text-slate-700">
+        How much did it cost?
+        <span class="mt-2 flex items-center rounded-xl border border-slate-200 px-4 transition focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
+          <span class="font-bold text-slate-400">$</span>
+          <input
+            id="purchase-amount"
+            name="amount"
+            type="number"
+            min="0.01"
+            step="0.01"
+            inputmode="decimal"
+            required
+            placeholder="4.50"
+            class="min-w-0 w-full bg-transparent px-2 py-3 outline-none"
+          />
+        </span>
+      </label>
+
+      <label class="mt-4 block text-sm font-bold text-slate-700">
+        Which bucket should pay for it?
+        <select
+          id="purchase-bucket"
+          name="bucket"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+        >
+          <option value="spending">🛒 Spending</option>
+          <option value="saving">🎯 Saving</option>
+          <option value="giving">❤️ Giving</option>
+        </select>
+      </label>
+
+      <p
+        id="purchase-balance-help"
+        class="mt-3 text-sm text-slate-500"
+      ></p>
+
+      <p
+        id="purchase-error"
+        class="mt-4 hidden rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700"
+      ></p>
+
+      <button
+        type="submit"
+        class="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700"
+      >
+        Send for Parent Approval
+      </button>
+    </form>
+  </dialog>
+
   <div
     id="prototype-toast"
     class="pointer-events-none fixed bottom-5 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 translate-y-5 rounded-2xl bg-slate-950 px-5 py-4 text-center text-sm font-bold text-white opacity-0 shadow-2xl transition-all duration-200"
@@ -103,7 +196,9 @@ const demoJson = JSON.stringify(demoKids);
     } from "../../types";
 
     import {
+      createPurchaseRequest,
       loadState,
+      saveState,
     } from "../../lib/store";
 
     const dashboard = document.querySelector(
@@ -116,6 +211,30 @@ const demoJson = JSON.stringify(demoKids);
 
     const toast = document.querySelector(
       "#prototype-toast",
+    );
+
+    const purchaseDialog = document.querySelector(
+      "#purchase-dialog",
+    );
+
+    const purchaseForm = document.querySelector(
+      "#purchase-form",
+    );
+
+    const closePurchaseDialog = document.querySelector(
+      "#close-purchase-dialog",
+    );
+
+    const purchaseBucket = document.querySelector(
+      "#purchase-bucket",
+    );
+
+    const purchaseBalanceHelp = document.querySelector(
+      "#purchase-balance-help",
+    );
+
+    const purchaseError = document.querySelector(
+      "#purchase-error",
     );
 
     let toastTimeout: number | undefined;
@@ -559,29 +678,75 @@ const demoJson = JSON.stringify(demoKids);
       attachActionListeners();
     }
 
+    let currentKid: Kid | null = null;
+    let currentState: FamilyBankState | null = null;
+
+    function updatePurchaseBalanceHelp(): void {
+      if (
+        !currentKid ||
+        !(purchaseBucket instanceof HTMLSelectElement) ||
+        !(purchaseBalanceHelp instanceof HTMLElement)
+      ) {
+        return;
+      }
+
+      const bucket = purchaseBucket.value as BucketType;
+      const meta = bucketMeta[bucket];
+
+      purchaseBalanceHelp.textContent =
+        `${meta.icon} ${meta.label} balance: ${money.format(currentKid.buckets[bucket])}`;
+    }
+
+    function openPurchaseDialog(): void {
+      if (!(purchaseDialog instanceof HTMLDialogElement)) {
+        return;
+      }
+
+      if (purchaseError instanceof HTMLElement) {
+        purchaseError.classList.add("hidden");
+        purchaseError.textContent = "";
+      }
+
+      updatePurchaseBalanceHelp();
+      purchaseDialog.showModal();
+
+      window.setTimeout(() => {
+        document
+          .querySelector<HTMLInputElement>(
+            "#purchase-description",
+          )
+          ?.focus();
+      }, 0);
+    }
+
     function attachActionListeners(): void {
       document
-        .querySelectorAll<HTMLElement>(
-          "[data-action]",
+        .querySelector<HTMLElement>(
+          '[data-action="purchase"]',
         )
-        .forEach((button) => {
-          button.addEventListener("click", () => {
-            const action = button.dataset.action;
+        ?.addEventListener(
+          "click",
+          openPurchaseDialog,
+        );
 
-            const messages: Record<string, string> = {
-              purchase:
-                "The purchase request screen is coming next.",
-              move:
-                "The Move Money screen is coming next.",
-              afford:
-                "The Can I Buy It calculator is coming next.",
-            };
+      document
+        .querySelector<HTMLElement>(
+          '[data-action="move"]',
+        )
+        ?.addEventListener("click", () => {
+          showToast(
+            "The Move Money screen is coming next.",
+          );
+        });
 
-            showToast(
-              messages[action ?? ""] ??
-                "This feature is coming next.",
-            );
-          });
+      document
+        .querySelector<HTMLElement>(
+          '[data-action="afford"]',
+        )
+        ?.addEventListener("click", () => {
+          showToast(
+            "The Can I Buy It calculator is coming next.",
+          );
         });
 
       document
@@ -607,6 +772,83 @@ const demoJson = JSON.stringify(demoKids);
         });
     }
 
+    closePurchaseDialog?.addEventListener(
+      "click",
+      () => {
+        if (purchaseDialog instanceof HTMLDialogElement) {
+          purchaseDialog.close();
+        }
+      },
+    );
+
+    purchaseDialog?.addEventListener(
+      "click",
+      (event) => {
+        if (
+          purchaseDialog instanceof HTMLDialogElement &&
+          event.target === purchaseDialog
+        ) {
+          purchaseDialog.close();
+        }
+      },
+    );
+
+    purchaseBucket?.addEventListener(
+      "change",
+      updatePurchaseBalanceHelp,
+    );
+
+    purchaseForm?.addEventListener(
+      "submit",
+      (event) => {
+        event.preventDefault();
+
+        if (
+          !(purchaseForm instanceof HTMLFormElement) ||
+          !currentState ||
+          !currentKid
+        ) {
+          return;
+        }
+
+        const formData = new FormData(purchaseForm);
+        const description = String(
+          formData.get("description") ?? "",
+        );
+        const amount = Number(formData.get("amount"));
+        const bucket = formData.get("bucket") as BucketType;
+
+        try {
+          createPurchaseRequest(
+            currentState,
+            currentKid.slug,
+            description,
+            amount,
+            bucket,
+          );
+
+          saveState(currentState);
+          purchaseForm.reset();
+
+          if (purchaseDialog instanceof HTMLDialogElement) {
+            purchaseDialog.close();
+          }
+
+          showToast(
+            "Request sent for parent approval! ⏳",
+          );
+        } catch (error) {
+          if (purchaseError instanceof HTMLElement) {
+            purchaseError.textContent =
+              error instanceof Error
+                ? error.message
+                : "Unable to send the purchase request.";
+            purchaseError.classList.remove("hidden");
+          }
+        }
+      },
+    );
+
     if (
       dashboard instanceof HTMLElement &&
       demoElement instanceof HTMLElement
@@ -623,11 +865,16 @@ const demoJson = JSON.stringify(demoKids);
 
       const savedKid = state.kids[slug];
 
+      currentState = state;
+      currentKid = savedKid ?? demoKids[slug] ?? null;
+
       if (savedKid) {
         renderDashboard(savedKid);
       } else {
         attachActionListeners();
       }
+
+      updatePurchaseBalanceHelp();
     }
   </script>
 </Layout>
