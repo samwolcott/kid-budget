@@ -192,10 +192,41 @@ const demoJson = JSON.stringify(demoKids);
         <button id="close-new-goal-dialog" type="button" class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200" aria-label="Close">×</button>
       </div>
 
-      <label class="mt-6 block text-sm font-bold text-slate-700">
-        Emoji
-        <input name="emoji" type="text" maxlength="8" value="🎯" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-2xl outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100" />
-      </label>
+      <fieldset class="mt-6">
+        <legend class="text-sm font-bold text-slate-700">
+          Choose an icon
+        </legend>
+
+        <div class="mt-3 flex items-center gap-4 rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-100">
+          <div
+            id="selected-goal-emoji"
+            class="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white text-4xl shadow-sm ring-2 ring-emerald-500"
+            aria-hidden="true"
+          >
+            🎯
+          </div>
+
+          <div>
+            <strong class="block text-slate-900">Selected icon</strong>
+            <span class="mt-1 block text-sm text-slate-500">
+              Tap any emoji below to change it.
+            </span>
+          </div>
+        </div>
+
+        <input
+          id="goal-emoji-input"
+          name="emoji"
+          type="hidden"
+          value="🎯"
+        />
+
+        <div
+          id="goal-emoji-picker"
+          class="mt-4 grid grid-cols-6 gap-2 sm:grid-cols-8"
+          aria-label="Choose a goal icon"
+        ></div>
+      </fieldset>
 
       <label class="mt-4 block text-sm font-bold text-slate-700">
         Goal name
@@ -320,6 +351,15 @@ const demoJson = JSON.stringify(demoKids);
     const newGoalError = document.querySelector(
       "#new-goal-error",
     );
+    const goalEmojiPicker = document.querySelector(
+      "#goal-emoji-picker",
+    );
+    const goalEmojiInput = document.querySelector(
+      "#goal-emoji-input",
+    );
+    const selectedGoalEmoji = document.querySelector(
+      "#selected-goal-emoji",
+    );
 
     const allocateGoalDialog = document.querySelector(
       "#allocate-goal-dialog",
@@ -402,6 +442,17 @@ const demoJson = JSON.stringify(demoKids);
       },
     };
 
+    const goalEmojis = [
+      "🎯", "🎮", "🧱", "🎲", "🃏", "🧸",
+      "⚽️", "🏀", "🏈", "⚾️", "🎾", "🏒",
+      "🚲", "🛴", "🛹", "🚗", "✈️", "🚀",
+      "🎸", "🎹", "🎧", "🎤", "🥁", "🎨",
+      "💻", "📱", "⌚️", "📷", "🎥", "🕹️",
+      "🐶", "🐱", "🦖", "🐠", "🐴", "🦜",
+      "🍕", "🍦", "🍩", "🍪", "🍿", "🧁",
+      "🎁", "🎉", "📚", "🏕️", "🏖️", "⭐️",
+    ];
+
     const transactionIcons: Record<
       Transaction["type"],
       string
@@ -412,6 +463,65 @@ const demoJson = JSON.stringify(demoKids);
       goal: "🎯",
       adjustment: "✏️",
     };
+
+    function setSelectedGoalEmoji(emoji: string): void {
+      if (goalEmojiInput instanceof HTMLInputElement) {
+        goalEmojiInput.value = emoji;
+      }
+
+      if (selectedGoalEmoji instanceof HTMLElement) {
+        selectedGoalEmoji.textContent = emoji;
+      }
+
+      goalEmojiPicker
+        ?.querySelectorAll<HTMLButtonElement>("[data-goal-emoji]")
+        .forEach((button) => {
+          const selected = button.dataset.goalEmoji === emoji;
+
+          button.classList.toggle("bg-emerald-600", selected);
+          button.classList.toggle("ring-2", selected);
+          button.classList.toggle("ring-emerald-700", selected);
+          button.classList.toggle("scale-105", selected);
+          button.classList.toggle("bg-slate-100", !selected);
+          button.classList.toggle("hover:bg-slate-200", !selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+    }
+
+    function renderGoalEmojiPicker(): void {
+      if (!(goalEmojiPicker instanceof HTMLElement)) {
+        return;
+      }
+
+      goalEmojiPicker.innerHTML = goalEmojis
+        .map(
+          (emoji) => `
+            <button
+              type="button"
+              data-goal-emoji="${emoji}"
+              class="grid aspect-square min-h-11 place-items-center rounded-xl bg-slate-100 text-2xl transition hover:-translate-y-0.5 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              aria-label="Choose ${emoji}"
+              aria-pressed="false"
+            >
+              ${emoji}
+            </button>
+          `,
+        )
+        .join("");
+
+      goalEmojiPicker
+        .querySelectorAll<HTMLButtonElement>("[data-goal-emoji]")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            const emoji = button.dataset.goalEmoji;
+            if (emoji) {
+              setSelectedGoalEmoji(emoji);
+            }
+          });
+        });
+
+      setSelectedGoalEmoji("🎯");
+    }
 
     function escapeHtml(value: string): string {
       const element = document.createElement("div");
@@ -832,6 +942,7 @@ const demoJson = JSON.stringify(demoKids);
         newGoalError.textContent = "";
       }
       if (newGoalForm instanceof HTMLFormElement) newGoalForm.reset();
+      setSelectedGoalEmoji("🎯");
       newGoalDialog.showModal();
       window.setTimeout(() => newGoalForm?.querySelector<HTMLInputElement>('[name="name"]')?.focus(), 0);
     }
@@ -1049,6 +1160,8 @@ const demoJson = JSON.stringify(demoKids);
         }
       }
     });
+
+    renderGoalEmojiPicker();
 
     if (
       dashboard instanceof HTMLElement &&
