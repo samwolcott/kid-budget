@@ -366,3 +366,126 @@ export function allocateToGoal(
   });
 }
 
+
+
+export function removeFromGoal(
+  state: FamilyBankState,
+  slug: string,
+  goalId: string,
+  amount: number,
+): void {
+  const kid = state.kids[slug];
+
+  if (!kid) {
+    throw new Error("Kid account not found.");
+  }
+
+  const goal = kid.goals.find(
+    (item) => item.id === goalId,
+  );
+
+  if (!goal) {
+    throw new Error("Savings goal not found.");
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error("Enter an amount greater than $0.");
+  }
+
+  if (amount > goal.saved) {
+    throw new Error(
+      `You can remove up to $${goal.saved.toFixed(2)} from this goal.`,
+    );
+  }
+
+  goal.saved = roundCurrency(
+    goal.saved - amount,
+  );
+
+  kid.transactions.unshift({
+    id: crypto.randomUUID(),
+    date: today(),
+    description: `Removed from ${goal.name}`,
+    amount: -roundCurrency(amount),
+    bucket: "saving",
+    type: "goal",
+  });
+}
+
+export function deleteGoal(
+  state: FamilyBankState,
+  slug: string,
+  goalId: string,
+): void {
+  const kid = state.kids[slug];
+
+  if (!kid) {
+    throw new Error("Kid account not found.");
+  }
+
+  const goalIndex = kid.goals.findIndex(
+    (item) => item.id === goalId,
+  );
+
+  if (goalIndex < 0) {
+    throw new Error("Savings goal not found.");
+  }
+
+  const [goal] = kid.goals.splice(goalIndex, 1);
+
+  if (goal.saved > 0) {
+    kid.transactions.unshift({
+      id: crypto.randomUUID(),
+      date: today(),
+      description: `Closed ${goal.name} goal`,
+      amount: -roundCurrency(goal.saved),
+      bucket: "saving",
+      type: "goal",
+    });
+  }
+}
+
+export function completeGoalPurchase(
+  state: FamilyBankState,
+  slug: string,
+  goalId: string,
+): void {
+  const kid = state.kids[slug];
+
+  if (!kid) {
+    throw new Error("Kid account not found.");
+  }
+
+  const goalIndex = kid.goals.findIndex(
+    (item) => item.id === goalId,
+  );
+
+  if (goalIndex < 0) {
+    throw new Error("Savings goal not found.");
+  }
+
+  const goal = kid.goals[goalIndex];
+
+  if (goal.saved < goal.target) {
+    throw new Error("This goal is not fully funded yet.");
+  }
+
+  if (kid.buckets.saving < goal.target) {
+    throw new Error("There is not enough money in Saving.");
+  }
+
+  kid.buckets.saving = roundCurrency(
+    kid.buckets.saving - goal.target,
+  );
+
+  kid.goals.splice(goalIndex, 1);
+
+  kid.transactions.unshift({
+    id: crypto.randomUUID(),
+    date: today(),
+    description: goal.name,
+    amount: -roundCurrency(goal.target),
+    bucket: "saving",
+    type: "purchase",
+  });
+}

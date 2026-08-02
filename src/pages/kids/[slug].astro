@@ -274,6 +274,80 @@ const demoJson = JSON.stringify(demoKids);
     </form>
   </dialog>
 
+  <dialog
+    id="remove-goal-dialog"
+    class="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl bg-white p-0 shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
+  >
+    <form id="remove-goal-form" class="p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-violet-600">Remove allocation</p>
+          <h2 id="remove-goal-title" class="mt-1 text-2xl font-black">Move money out of goal</h2>
+          <p id="remove-goal-help" class="mt-2 text-sm leading-6 text-slate-500"></p>
+        </div>
+        <button id="close-remove-goal-dialog" type="button" class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200" aria-label="Close">×</button>
+      </div>
+
+      <label class="mt-6 block text-sm font-bold text-slate-700">
+        Amount to remove
+        <span class="mt-2 flex items-center rounded-xl border border-slate-200 px-4 transition focus-within:border-violet-400 focus-within:ring-2 focus-within:ring-violet-100">
+          <span class="font-bold text-slate-400">$</span>
+          <input name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="5.00" class="min-w-0 w-full bg-transparent px-2 py-3 outline-none" />
+        </span>
+      </label>
+
+      <input id="remove-goal-id" name="goalId" type="hidden" />
+      <p id="remove-goal-error" class="mt-4 hidden rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700"></p>
+      <button type="submit" class="mt-6 w-full rounded-xl bg-violet-600 px-5 py-3 font-bold text-white transition hover:bg-violet-700">Return to Available Saving</button>
+    </form>
+  </dialog>
+
+  <dialog
+    id="delete-goal-dialog"
+    class="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl bg-white p-0 shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
+  >
+    <div class="p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-red-600">Delete goal</p>
+          <h2 id="delete-goal-title" class="mt-1 text-2xl font-black">Delete this goal?</h2>
+          <p id="delete-goal-help" class="mt-2 text-sm leading-6 text-slate-500"></p>
+        </div>
+        <button id="close-delete-goal-dialog" type="button" class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200" aria-label="Close">×</button>
+      </div>
+
+      <div class="mt-6 flex gap-3">
+        <button id="cancel-delete-goal" type="button" class="flex-1 rounded-xl bg-slate-100 px-5 py-3 font-bold text-slate-700 transition hover:bg-slate-200">Cancel</button>
+        <button id="confirm-delete-goal" type="button" class="flex-1 rounded-xl bg-red-600 px-5 py-3 font-bold text-white transition hover:bg-red-700">Delete Goal</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog
+    id="complete-goal-dialog"
+    class="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl bg-white p-0 shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
+  >
+    <div class="p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-emerald-600">Goal complete</p>
+          <h2 id="complete-goal-title" class="mt-1 text-2xl font-black">Did you buy it?</h2>
+          <p id="complete-goal-help" class="mt-2 text-sm leading-6 text-slate-500"></p>
+        </div>
+        <button id="close-complete-goal-dialog" type="button" class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200" aria-label="Close">×</button>
+      </div>
+
+      <div class="mt-5 rounded-2xl bg-emerald-50 p-4 text-sm leading-6 text-emerald-800">
+        This will deduct the purchase from Saving, remove the goal, and add it to Recent Activity.
+      </div>
+
+      <div class="mt-6 flex gap-3">
+        <button id="cancel-complete-goal" type="button" class="flex-1 rounded-xl bg-slate-100 px-5 py-3 font-bold text-slate-700 transition hover:bg-slate-200">Cancel</button>
+        <button id="confirm-complete-goal" type="button" class="flex-1 rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white transition hover:bg-emerald-700">Complete Purchase</button>
+      </div>
+    </div>
+  </dialog>
+
   <div
     id="prototype-toast"
     class="pointer-events-none fixed bottom-5 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 translate-y-5 rounded-2xl bg-slate-950 px-5 py-4 text-center text-sm font-bold text-white opacity-0 shadow-2xl transition-all duration-200"
@@ -297,9 +371,12 @@ const demoJson = JSON.stringify(demoKids);
 
     import {
       allocateToGoal,
+      completeGoalPurchase,
       createGoal,
       createPurchaseRequest,
+      deleteGoal,
       loadState,
+      removeFromGoal,
       saveState,
     } from "../../lib/store";
 
@@ -382,6 +459,30 @@ const demoJson = JSON.stringify(demoKids);
     const allocateGoalError = document.querySelector(
       "#allocate-goal-error",
     );
+
+    const removeGoalDialog = document.querySelector("#remove-goal-dialog");
+    const removeGoalForm = document.querySelector("#remove-goal-form");
+    const closeRemoveGoalDialog = document.querySelector("#close-remove-goal-dialog");
+    const removeGoalTitle = document.querySelector("#remove-goal-title");
+    const removeGoalHelp = document.querySelector("#remove-goal-help");
+    const removeGoalId = document.querySelector("#remove-goal-id");
+    const removeGoalError = document.querySelector("#remove-goal-error");
+
+    const deleteGoalDialog = document.querySelector("#delete-goal-dialog");
+    const closeDeleteGoalDialog = document.querySelector("#close-delete-goal-dialog");
+    const cancelDeleteGoal = document.querySelector("#cancel-delete-goal");
+    const confirmDeleteGoal = document.querySelector("#confirm-delete-goal");
+    const deleteGoalTitle = document.querySelector("#delete-goal-title");
+    const deleteGoalHelp = document.querySelector("#delete-goal-help");
+
+    const completeGoalDialog = document.querySelector("#complete-goal-dialog");
+    const closeCompleteGoalDialog = document.querySelector("#close-complete-goal-dialog");
+    const cancelCompleteGoal = document.querySelector("#cancel-complete-goal");
+    const confirmCompleteGoal = document.querySelector("#confirm-complete-goal");
+    const completeGoalTitle = document.querySelector("#complete-goal-title");
+    const completeGoalHelp = document.querySelector("#complete-goal-help");
+
+    let selectedGoalId = "";
 
     let toastTimeout: number | undefined;
 
@@ -648,18 +749,48 @@ const demoJson = JSON.stringify(demoKids);
                 <div class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width: ${percent}%"></div>
               </div>
 
-              <div class="mt-4 flex items-center justify-between gap-4">
+              <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <p class="text-sm text-slate-500">
                   ${remaining === 0 ? "Goal complete! 🎉" : `${money.format(remaining)} left to go`}
                 </p>
 
-                <button
-                  type="button"
-                  class="inline-flex min-h-10 items-center justify-center rounded-xl px-4 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${remaining === 0 ? "cursor-default bg-emerald-50 text-emerald-700" : "bg-emerald-600 text-white hover:bg-emerald-700"}"
-                  ${remaining === 0 ? "disabled" : `data-goal-id="${goal.id}"`}
-                >
-                  ${remaining === 0 ? "Complete 🎉" : "Add money"}
-                </button>
+                <div class="flex flex-wrap gap-2">
+                  ${goal.saved > 0 ? `
+                    <button
+                      type="button"
+                      data-remove-goal-id="${goal.id}"
+                      class="inline-flex min-h-10 items-center justify-center rounded-xl bg-violet-50 px-3 text-sm font-bold text-violet-700 transition hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    >
+                      Remove money
+                    </button>
+                  ` : ""}
+
+                  ${remaining === 0 ? `
+                    <button
+                      type="button"
+                      data-complete-goal-id="${goal.id}"
+                      class="inline-flex min-h-10 items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      Complete purchase
+                    </button>
+                  ` : `
+                    <button
+                      type="button"
+                      data-goal-id="${goal.id}"
+                      class="inline-flex min-h-10 items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      Add money
+                    </button>
+                  `}
+
+                  <button
+                    type="button"
+                    data-delete-goal-id="${goal.id}"
+                    class="inline-flex min-h-10 items-center justify-center rounded-xl bg-red-50 px-3 text-sm font-bold text-red-700 transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </article>
           `;
@@ -975,6 +1106,56 @@ const demoJson = JSON.stringify(demoKids);
       window.setTimeout(() => allocateGoalForm?.querySelector<HTMLInputElement>('[name="amount"]')?.focus(), 0);
     }
 
+    function openRemoveGoalDialog(goalId: string): void {
+      if (!currentKid || !(removeGoalDialog instanceof HTMLDialogElement)) return;
+      const goal = currentKid.goals.find((item) => item.id === goalId);
+      if (!goal) return;
+
+      selectedGoalId = goal.id;
+      if (removeGoalTitle instanceof HTMLElement) removeGoalTitle.textContent = `Remove money from ${goal.name}`;
+      if (removeGoalHelp instanceof HTMLElement) removeGoalHelp.textContent = `${money.format(goal.saved)} is currently allocated. Removed money becomes available for another goal.`;
+      if (removeGoalId instanceof HTMLInputElement) removeGoalId.value = goal.id;
+      if (removeGoalError instanceof HTMLElement) {
+        removeGoalError.classList.add("hidden");
+        removeGoalError.textContent = "";
+      }
+      if (removeGoalForm instanceof HTMLFormElement) {
+        const amount = removeGoalForm.querySelector<HTMLInputElement>('[name="amount"]');
+        if (amount) {
+          amount.value = "";
+          amount.max = String(goal.saved);
+        }
+      }
+      removeGoalDialog.showModal();
+      window.setTimeout(() => removeGoalForm?.querySelector<HTMLInputElement>('[name="amount"]')?.focus(), 0);
+    }
+
+    function openDeleteGoalDialog(goalId: string): void {
+      if (!currentKid || !(deleteGoalDialog instanceof HTMLDialogElement)) return;
+      const goal = currentKid.goals.find((item) => item.id === goalId);
+      if (!goal) return;
+
+      selectedGoalId = goal.id;
+      if (deleteGoalTitle instanceof HTMLElement) deleteGoalTitle.textContent = `Delete ${goal.name}?`;
+      if (deleteGoalHelp instanceof HTMLElement) {
+        deleteGoalHelp.textContent = goal.saved > 0
+          ? `${money.format(goal.saved)} will return to Available Saving. Your total Saving balance will not change.`
+          : "This goal has no money allocated to it.";
+      }
+      deleteGoalDialog.showModal();
+    }
+
+    function openCompleteGoalDialog(goalId: string): void {
+      if (!currentKid || !(completeGoalDialog instanceof HTMLDialogElement)) return;
+      const goal = currentKid.goals.find((item) => item.id === goalId);
+      if (!goal) return;
+
+      selectedGoalId = goal.id;
+      if (completeGoalTitle instanceof HTMLElement) completeGoalTitle.textContent = `Buy ${goal.name}?`;
+      if (completeGoalHelp instanceof HTMLElement) completeGoalHelp.textContent = `${money.format(goal.target)} will be deducted from Saving.`;
+      completeGoalDialog.showModal();
+    }
+
     function attachActionListeners(): void {
       document
         .querySelector<HTMLElement>(
@@ -1011,6 +1192,33 @@ const demoJson = JSON.stringify(demoKids);
           button.addEventListener("click", () => {
             const goalId = button.dataset.goalId;
             if (goalId) openAllocateGoalDialog(goalId);
+          });
+        });
+
+      document
+        .querySelectorAll<HTMLElement>("[data-remove-goal-id]")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            const goalId = button.dataset.removeGoalId;
+            if (goalId) openRemoveGoalDialog(goalId);
+          });
+        });
+
+      document
+        .querySelectorAll<HTMLElement>("[data-delete-goal-id]")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            const goalId = button.dataset.deleteGoalId;
+            if (goalId) openDeleteGoalDialog(goalId);
+          });
+        });
+
+      document
+        .querySelectorAll<HTMLElement>("[data-complete-goal-id]")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            const goalId = button.dataset.completeGoalId;
+            if (goalId) openCompleteGoalDialog(goalId);
           });
         });
 
@@ -1158,6 +1366,85 @@ const demoJson = JSON.stringify(demoKids);
           allocateGoalError.textContent = error instanceof Error ? error.message : "Unable to add money to the goal.";
           allocateGoalError.classList.remove("hidden");
         }
+      }
+    });
+
+    closeRemoveGoalDialog?.addEventListener("click", () => {
+      if (removeGoalDialog instanceof HTMLDialogElement) removeGoalDialog.close();
+    });
+    removeGoalDialog?.addEventListener("click", (event) => {
+      if (removeGoalDialog instanceof HTMLDialogElement && event.target === removeGoalDialog) removeGoalDialog.close();
+    });
+
+    closeDeleteGoalDialog?.addEventListener("click", () => {
+      if (deleteGoalDialog instanceof HTMLDialogElement) deleteGoalDialog.close();
+    });
+    cancelDeleteGoal?.addEventListener("click", () => {
+      if (deleteGoalDialog instanceof HTMLDialogElement) deleteGoalDialog.close();
+    });
+    deleteGoalDialog?.addEventListener("click", (event) => {
+      if (deleteGoalDialog instanceof HTMLDialogElement && event.target === deleteGoalDialog) deleteGoalDialog.close();
+    });
+
+    closeCompleteGoalDialog?.addEventListener("click", () => {
+      if (completeGoalDialog instanceof HTMLDialogElement) completeGoalDialog.close();
+    });
+    cancelCompleteGoal?.addEventListener("click", () => {
+      if (completeGoalDialog instanceof HTMLDialogElement) completeGoalDialog.close();
+    });
+    completeGoalDialog?.addEventListener("click", (event) => {
+      if (completeGoalDialog instanceof HTMLDialogElement && event.target === completeGoalDialog) completeGoalDialog.close();
+    });
+
+    removeGoalForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!(removeGoalForm instanceof HTMLFormElement) || !currentState || !currentKid) return;
+      const data = new FormData(removeGoalForm);
+      try {
+        removeFromGoal(
+          currentState,
+          currentKid.slug,
+          String(data.get("goalId") ?? ""),
+          Number(data.get("amount")),
+        );
+        saveState(currentState);
+        currentKid = currentState.kids[currentKid.slug];
+        renderDashboard(currentKid);
+        removeGoalDialog instanceof HTMLDialogElement && removeGoalDialog.close();
+        showToast("Money returned to Available Saving! ↩️");
+      } catch (error) {
+        if (removeGoalError instanceof HTMLElement) {
+          removeGoalError.textContent = error instanceof Error ? error.message : "Unable to remove money from the goal.";
+          removeGoalError.classList.remove("hidden");
+        }
+      }
+    });
+
+    confirmDeleteGoal?.addEventListener("click", () => {
+      if (!currentState || !currentKid || !selectedGoalId) return;
+      try {
+        deleteGoal(currentState, currentKid.slug, selectedGoalId);
+        saveState(currentState);
+        currentKid = currentState.kids[currentKid.slug];
+        renderDashboard(currentKid);
+        deleteGoalDialog instanceof HTMLDialogElement && deleteGoalDialog.close();
+        showToast("Goal deleted. Money is available again.");
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : "Unable to delete the goal.");
+      }
+    });
+
+    confirmCompleteGoal?.addEventListener("click", () => {
+      if (!currentState || !currentKid || !selectedGoalId) return;
+      try {
+        completeGoalPurchase(currentState, currentKid.slug, selectedGoalId);
+        saveState(currentState);
+        currentKid = currentState.kids[currentKid.slug];
+        renderDashboard(currentKid);
+        completeGoalDialog instanceof HTMLDialogElement && completeGoalDialog.close();
+        showToast("Goal purchased! Nice saving! 🎉");
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : "Unable to complete the purchase.");
       }
     });
 
