@@ -45,7 +45,10 @@ const demoJson = JSON.stringify(demoKids);
             Pay allowance
           </h2>
 
-          <p class="mt-1 text-sm text-slate-300">
+          <p
+            id="current-split-summary"
+            class="mt-1 text-sm text-slate-300"
+          >
             70% Spending · 20% Saving · 10% Giving
           </p>
         </div>
@@ -104,11 +107,11 @@ const demoJson = JSON.stringify(demoKids);
 
   <dialog
     id="allowance-dialog"
-    class="w-[calc(100%-2rem)] max-w-md rounded-3xl bg-white p-0 shadow-2xl backdrop:bg-slate-950/55"
+    class="fixed inset-0 m-auto max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto rounded-3xl bg-white p-0 shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
   >
     <form
       id="allowance-form"
-      class="p-6"
+      class="p-5 sm:p-7"
     >
       <div class="flex items-start justify-between gap-4">
         <div>
@@ -116,61 +119,155 @@ const demoJson = JSON.stringify(demoKids);
             Payday
           </p>
 
-          <h2 class="mt-1 text-2xl font-black">
+          <h2 class="mt-1 text-3xl font-black">
             Pay allowance
           </h2>
 
           <p class="mt-2 text-sm leading-6 text-slate-500">
-            Choose who gets paid. Each allowance will automatically split 70/20/10.
+            Choose who gets paid, adjust each amount, and decide how today's allowance is divided.
           </p>
         </div>
 
         <button
           id="close-allowance-dialog"
           type="button"
-          class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl text-slate-600"
+          class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200"
           aria-label="Close"
         >
           ×
         </button>
       </div>
 
-      <div
-        id="allowance-kids"
-        class="mt-6 grid gap-3"
-      ></div>
+      <section class="mt-7">
+        <h3 class="text-lg font-black">
+          Who is getting paid today?
+        </h3>
 
-      <div class="mt-5 grid grid-cols-3 gap-2 text-center">
-        <div class="rounded-xl bg-blue-50 p-3">
-          <span class="block text-xs font-bold text-blue-700">
-            Spending
+        <div
+          id="allowance-kids"
+          class="mt-3 grid gap-3"
+        ></div>
+      </section>
+
+      <section class="mt-7 border-t border-slate-200 pt-6">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-lg font-black">
+            How should we split it?
+          </h3>
+
+          <span class="text-xs font-bold text-emerald-700">
+            Remembers your last split
           </span>
-
-          <strong class="mt-1 block text-blue-950">
-            70%
-          </strong>
         </div>
 
-        <div class="rounded-xl bg-emerald-50 p-3">
-          <span class="block text-xs font-bold text-emerald-700">
-            Saving
-          </span>
+        <div class="mt-4 grid gap-3 sm:grid-cols-3">
+          <label class="rounded-2xl bg-blue-50 p-4 ring-1 ring-blue-100">
+            <span class="block text-sm font-bold text-blue-700">
+              Spending
+            </span>
 
-          <strong class="mt-1 block text-emerald-950">
-            20%
-          </strong>
+            <span class="mt-2 flex items-center gap-2">
+              <input
+                id="spending-percent"
+                name="spendingPercent"
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                inputmode="numeric"
+                class="min-w-0 flex-1 rounded-xl border border-blue-200 bg-white px-3 py-2 text-lg font-black text-blue-950 outline-none focus:ring-2 focus:ring-blue-500"
+                value="70"
+              />
+
+              <span class="font-black text-blue-900">
+                %
+              </span>
+            </span>
+          </label>
+
+          <label class="rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-100">
+            <span class="block text-sm font-bold text-emerald-700">
+              Saving
+            </span>
+
+            <span class="mt-2 flex items-center gap-2">
+              <input
+                id="saving-percent"
+                name="savingPercent"
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                inputmode="numeric"
+                class="min-w-0 flex-1 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-lg font-black text-emerald-950 outline-none focus:ring-2 focus:ring-emerald-500"
+                value="20"
+              />
+
+              <span class="font-black text-emerald-900">
+                %
+              </span>
+            </span>
+          </label>
+
+          <label class="rounded-2xl bg-amber-50 p-4 ring-1 ring-amber-100">
+            <span class="block text-sm font-bold text-amber-700">
+              Giving
+            </span>
+
+            <span class="mt-2 flex items-center gap-2">
+              <input
+                id="giving-percent"
+                name="givingPercent"
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                inputmode="numeric"
+                class="min-w-0 flex-1 rounded-xl border border-amber-200 bg-white px-3 py-2 text-lg font-black text-amber-950 outline-none focus:ring-2 focus:ring-amber-500"
+                value="10"
+              />
+
+              <span class="font-black text-amber-900">
+                %
+              </span>
+            </span>
+          </label>
         </div>
 
-        <div class="rounded-xl bg-amber-50 p-3">
-          <span class="block text-xs font-bold text-amber-700">
-            Giving
-          </span>
-
-          <strong class="mt-1 block text-amber-950">
-            10%
-          </strong>
+        <div
+          id="split-status"
+          class="mt-3 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700"
+          aria-live="polite"
+        >
+          ✓ Total = 100%
         </div>
-      </div>
+      </section>
+
+      <section class="mt-6">
+        <h3 class="text-lg font-black">
+          Preview
+        </h3>
+
+        <div class="mt-3 overflow-hidden rounded-2xl border border-slate-200">
+          <div
+            id="allowance-preview"
+            class="divide-y divide-slate-200"
+          ></div>
+        </div>
+      </section>
+
+      <section class="mt-5 flex items-center justify-between rounded-2xl bg-slate-100 px-5 py-4">
+        <span class="font-black">
+          Today's Total
+        </span>
+
+        <strong
+          id="today-total"
+          class="text-2xl font-black"
+        >
+          $0.00
+        </strong>
+      </section>
 
       <p
         id="allowance-error"
@@ -178,10 +275,11 @@ const demoJson = JSON.stringify(demoKids);
       ></p>
 
       <button
+        id="pay-allowance-submit"
         type="submit"
-        class="mt-6 w-full rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white transition hover:bg-emerald-700"
+        class="mt-5 w-full rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
       >
-        Pay Selected Allowances
+        Pay Allowance
       </button>
     </form>
   </dialog>
@@ -209,7 +307,18 @@ const demoJson = JSON.stringify(demoKids);
       payAllowance,
       resetState,
       saveState,
+      type AllowancePayment,
+      type AllowanceSplit,
     } from "../../lib/store";
+
+    const SPLIT_STORAGE_KEY =
+      "family-bank-allowance-split-v1";
+
+    const defaultSplit: AllowanceSplit = {
+      spending: 70,
+      saving: 20,
+      giving: 10,
+    };
 
     const demoElement =
       document.querySelector("#demo-kids");
@@ -250,9 +359,29 @@ const demoJson = JSON.stringify(demoKids);
         "#allowance-kids",
       );
 
+    const allowancePreview =
+      document.querySelector(
+        "#allowance-preview",
+      );
+
     const allowanceError =
       document.querySelector(
         "#allowance-error",
+      );
+
+    const splitStatus =
+      document.querySelector(
+        "#split-status",
+      );
+
+    const todayTotal =
+      document.querySelector(
+        "#today-total",
+      );
+
+    const paySubmit =
+      document.querySelector(
+        "#pay-allowance-submit",
       );
 
     const closeAllowanceDialog =
@@ -265,12 +394,40 @@ const demoJson = JSON.stringify(demoKids);
         "#reset-button",
       );
 
+    const currentSplitSummary =
+      document.querySelector(
+        "#current-split-summary",
+      );
+
+    const spendingPercent =
+      document.querySelector(
+        "#spending-percent",
+      );
+
+    const savingPercent =
+      document.querySelector(
+        "#saving-percent",
+      );
+
+    const givingPercent =
+      document.querySelector(
+        "#giving-percent",
+      );
+
     const toast =
       document.querySelector("#toast");
 
     let toastTimeout:
       | number
       | undefined;
+
+    function roundCurrency(
+      amount: number,
+    ): number {
+      return Math.round(
+        (amount + Number.EPSILON) * 100,
+      ) / 100;
+    }
 
     function showToast(
       message: string,
@@ -309,6 +466,82 @@ const demoJson = JSON.stringify(demoKids);
       );
     }
 
+    function loadSavedSplit(): AllowanceSplit {
+      try {
+        const raw =
+          localStorage.getItem(
+            SPLIT_STORAGE_KEY,
+          );
+
+        if (!raw) {
+          return defaultSplit;
+        }
+
+        const parsed =
+          JSON.parse(raw) as AllowanceSplit;
+
+        const total =
+          parsed.spending +
+          parsed.saving +
+          parsed.giving;
+
+        if (
+          !Number.isFinite(total) ||
+          Math.abs(total - 100) > 0.001
+        ) {
+          return defaultSplit;
+        }
+
+        return parsed;
+      } catch {
+        return defaultSplit;
+      }
+    }
+
+    function getSplit(): AllowanceSplit {
+      return {
+        spending:
+          spendingPercent instanceof HTMLInputElement
+            ? Number(spendingPercent.value)
+            : 0,
+
+        saving:
+          savingPercent instanceof HTMLInputElement
+            ? Number(savingPercent.value)
+            : 0,
+
+        giving:
+          givingPercent instanceof HTMLInputElement
+            ? Number(givingPercent.value)
+            : 0,
+      };
+    }
+
+    function setSplit(
+      split: AllowanceSplit,
+    ): void {
+      if (
+        spendingPercent instanceof HTMLInputElement
+      ) {
+        spendingPercent.value =
+          String(split.spending);
+      }
+
+      if (
+        savingPercent instanceof HTMLInputElement
+      ) {
+        savingPercent.value =
+          String(split.saving);
+      }
+
+      if (
+        givingPercent instanceof HTMLInputElement
+      ) {
+        givingPercent.value =
+          String(split.giving);
+      }
+    }
+
     function renderAllowanceKids(): void {
       if (
         !(allowanceKids instanceof HTMLElement)
@@ -320,7 +553,9 @@ const demoJson = JSON.stringify(demoKids);
         Object.values(state.kids)
           .map(
             (kid) => `
-              <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 p-4 transition has-[:checked]:border-emerald-300 has-[:checked]:bg-emerald-50">
+              <label
+                class="grid cursor-pointer grid-cols-[auto_auto_1fr] items-center gap-3 rounded-2xl border border-slate-200 p-4 transition has-[:checked]:border-emerald-300 has-[:checked]:bg-emerald-50 sm:grid-cols-[auto_auto_1fr_180px]"
+              >
                 <input
                   type="checkbox"
                   name="kid"
@@ -333,23 +568,242 @@ const demoJson = JSON.stringify(demoKids);
                   ${kid.emoji}
                 </span>
 
-                <span class="min-w-0 flex-1">
+                <span class="min-w-0">
                   <strong class="block">
                     ${kid.name}
                   </strong>
 
-                  <span class="text-sm text-slate-500">
-                    ${money.format(kid.allowanceAmount)}
+                  <span class="text-sm text-slate-500 sm:hidden">
+                    Allowance
                   </span>
                 </span>
 
-                <span class="text-sm font-bold text-emerald-700">
-                  Pay
+                <span class="col-span-3 grid gap-1 sm:col-span-1">
+                  <span class="hidden text-xs font-bold text-slate-500 sm:block">
+                    Allowance
+                  </span>
+
+                  <span class="flex items-center rounded-xl border border-slate-200 bg-white px-3">
+                    <span class="font-bold text-slate-400">
+                      $
+                    </span>
+
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      inputmode="decimal"
+                      name="amount-${kid.slug}"
+                      value="${kid.allowanceAmount.toFixed(2)}"
+                      class="min-w-0 w-full bg-transparent px-2 py-2 font-bold outline-none"
+                    />
+                  </span>
                 </span>
               </label>
             `,
           )
           .join("");
+
+      allowanceKids
+        .querySelectorAll("input")
+        .forEach((input) => {
+          input.addEventListener(
+            "input",
+            updateAllowanceEditor,
+          );
+
+          input.addEventListener(
+            "change",
+            updateAllowanceEditor,
+          );
+        });
+    }
+
+    function getSelectedPayments():
+      AllowancePayment[] {
+      if (
+        !(allowanceForm instanceof HTMLFormElement)
+      ) {
+        return [];
+      }
+
+      const formData =
+        new FormData(allowanceForm);
+
+      return formData
+        .getAll("kid")
+        .map(String)
+        .map((slug) => ({
+          slug,
+          amount: Number(
+            formData.get(
+              `amount-${slug}`,
+            ),
+          ),
+        }));
+    }
+
+    function updateAllowanceEditor(): void {
+      const split = getSplit();
+
+      const splitTotal =
+        split.spending +
+        split.saving +
+        split.giving;
+
+      const percentagesValid =
+        Number.isFinite(splitTotal) &&
+        Math.abs(splitTotal - 100) < 0.001 &&
+        split.spending >= 0 &&
+        split.saving >= 0 &&
+        split.giving >= 0;
+
+      const payments =
+        getSelectedPayments();
+
+      const paymentsValid =
+        payments.length > 0 &&
+        payments.every(
+          (payment) =>
+            Number.isFinite(
+              payment.amount,
+            ) &&
+            payment.amount > 0,
+        );
+
+      if (
+        splitStatus instanceof HTMLElement
+      ) {
+        if (percentagesValid) {
+          splitStatus.textContent =
+            "✓ Total = 100%";
+
+          splitStatus.className =
+            "mt-3 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700";
+        } else {
+          splitStatus.textContent =
+            `⚠ Total = ${Number.isFinite(splitTotal) ? splitTotal : 0}% — must equal 100%`;
+
+          splitStatus.className =
+            "mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700";
+        }
+      }
+
+      if (
+        paySubmit instanceof HTMLButtonElement
+      ) {
+        paySubmit.disabled =
+          !percentagesValid ||
+          !paymentsValid;
+      }
+
+      if (
+        todayTotal instanceof HTMLElement
+      ) {
+        const total =
+          payments.reduce(
+            (sum, payment) =>
+              sum + payment.amount,
+            0,
+          );
+
+        todayTotal.textContent =
+          money.format(total);
+      }
+
+      if (
+        allowancePreview instanceof HTMLElement
+      ) {
+        allowancePreview.innerHTML =
+          payments.length > 0
+            ? payments
+                .map((payment) => {
+                  const kid =
+                    state.kids[
+                      payment.slug
+                    ];
+
+                  if (!kid) {
+                    return "";
+                  }
+
+                  const spending =
+                    roundCurrency(
+                      payment.amount *
+                        (
+                          split.spending /
+                          100
+                        ),
+                    );
+
+                  const saving =
+                    roundCurrency(
+                      payment.amount *
+                        (
+                          split.saving /
+                          100
+                        ),
+                    );
+
+                  const giving =
+                    roundCurrency(
+                      payment.amount -
+                        spending -
+                        saving,
+                    );
+
+                  return `
+                    <div class="p-4">
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2">
+                          <span class="text-xl">
+                            ${kid.emoji}
+                          </span>
+
+                          <strong>
+                            ${kid.name}
+                          </strong>
+                        </div>
+
+                        <span class="font-black">
+                          ${money.format(payment.amount)}
+                        </span>
+                      </div>
+
+                      <div class="mt-3 grid grid-cols-3 gap-2 text-center text-xs font-bold">
+                        <div class="rounded-xl bg-blue-50 p-3 text-blue-800">
+                          Spending<br />
+                          ${money.format(spending)}
+                        </div>
+
+                        <div class="rounded-xl bg-emerald-50 p-3 text-emerald-800">
+                          Saving<br />
+                          ${money.format(saving)}
+                        </div>
+
+                        <div class="rounded-xl bg-amber-50 p-3 text-amber-800">
+                          Giving<br />
+                          ${money.format(giving)}
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                })
+                .join("")
+            : `
+                <div class="p-6 text-center text-sm text-slate-500">
+                  Select at least one child to see the preview.
+                </div>
+              `;
+      }
+
+      if (
+        currentSplitSummary instanceof HTMLElement &&
+        percentagesValid
+      ) {
+        currentSplitSummary.textContent =
+          `${split.spending}% Spending · ${split.saving}% Saving · ${split.giving}% Giving`;
+      }
     }
 
     function render(): void {
@@ -552,15 +1006,12 @@ const demoJson = JSON.stringify(demoKids);
 
             kid.buckets[
               request.bucket
-            ] = Math.round(
-              (
-                kid.buckets[
-                  request.bucket
-                ] -
-                request.amount
-              ) *
-                100,
-            ) / 100;
+            ] = roundCurrency(
+              kid.buckets[
+                request.bucket
+              ] -
+                request.amount,
+            );
 
             kid.transactions.unshift({
               id: crypto.randomUUID(),
@@ -592,6 +1043,7 @@ const demoJson = JSON.stringify(demoKids);
       "click",
       () => {
         renderAllowanceKids();
+        setSplit(loadSavedSplit());
 
         if (
           allowanceError instanceof HTMLElement
@@ -600,6 +1052,8 @@ const demoJson = JSON.stringify(demoKids);
             "hidden",
           );
         }
+
+        updateAllowanceEditor();
 
         if (
           allowanceDialog instanceof HTMLDialogElement
@@ -620,32 +1074,42 @@ const demoJson = JSON.stringify(demoKids);
       },
     );
 
+    [
+      spendingPercent,
+      savingPercent,
+      givingPercent,
+    ].forEach((input) => {
+      input?.addEventListener(
+        "input",
+        updateAllowanceEditor,
+      );
+    });
+
     allowanceForm?.addEventListener(
       "submit",
       (event) => {
         event.preventDefault();
 
-        if (
-          !(allowanceForm instanceof HTMLFormElement)
-        ) {
-          return;
-        }
+        const payments =
+          getSelectedPayments();
 
-        const formData =
-          new FormData(allowanceForm);
-
-        const selectedSlugs =
-          formData
-            .getAll("kid")
-            .map(String);
+        const split =
+          getSplit();
 
         try {
           payAllowance(
             state,
-            selectedSlugs,
+            payments,
+            split,
           );
 
           saveState(state);
+
+          localStorage.setItem(
+            SPLIT_STORAGE_KEY,
+            JSON.stringify(split),
+          );
+
           render();
 
           if (
@@ -696,6 +1160,8 @@ const demoJson = JSON.stringify(demoKids);
       },
     );
 
+    setSplit(loadSavedSplit());
+    updateAllowanceEditor();
     render();
   </script>
 </Layout>

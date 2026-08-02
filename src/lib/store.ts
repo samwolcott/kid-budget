@@ -7,6 +7,17 @@ import type {
 
 const STORAGE_KEY = "family-bank-state-v1";
 
+export interface AllowanceSplit {
+  spending: number;
+  saving: number;
+  giving: number;
+}
+
+export interface AllowancePayment {
+  slug: string;
+  amount: number;
+}
+
 function roundCurrency(amount: number): number {
   return Math.round((amount + Number.EPSILON) * 100) / 100;
 }
@@ -57,34 +68,56 @@ export function resetState(): void {
 
 export function payAllowance(
   state: FamilyBankState,
-  slugs: string[],
+  payments: AllowancePayment[],
+  split: AllowanceSplit,
 ): void {
-  if (slugs.length === 0) {
+  if (payments.length === 0) {
     throw new Error("Choose at least one child.");
   }
 
-  for (const slug of slugs) {
-    const kid = state.kids[slug];
+  const splitTotal =
+    split.spending +
+    split.saving +
+    split.giving;
+
+  if (
+    !Number.isFinite(splitTotal) ||
+    Math.abs(splitTotal - 100) > 0.001
+  ) {
+    throw new Error(
+      "Spending, Saving, and Giving must add up to 100%.",
+    );
+  }
+
+  for (const payment of payments) {
+    const kid = state.kids[payment.slug];
 
     if (!kid) {
       continue;
     }
 
-    const total = roundCurrency(
-      kid.allowanceAmount,
-    );
+    if (
+      !Number.isFinite(payment.amount) ||
+      payment.amount <= 0
+    ) {
+      throw new Error(
+        `Enter a valid allowance amount for ${kid.name}.`,
+      );
+    }
+
+    const total = roundCurrency(payment.amount);
 
     const spending = roundCurrency(
-      total * 0.7,
+      total * (split.spending / 100),
     );
 
     const saving = roundCurrency(
-      total * 0.2,
+      total * (split.saving / 100),
     );
 
     /*
-     * Giving receives the remainder so the three
-     * amounts always add back to the allowance total.
+     * Giving receives the remainder so rounding never
+     * causes the three amounts to differ from the total.
      */
     const giving = roundCurrency(
       total - spending - saving,
