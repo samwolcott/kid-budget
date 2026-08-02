@@ -1,0 +1,24 @@
+---
+interface Props {
+  amount: number;
+  showSign?: boolean;
+}
+
+const { amount, showSign = false } = Astro.props;
+
+const formatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
+
+const formattedAmount = formatter.format(Math.abs(amount));
+
+let output = formattedAmount;
+
+if (showSign) {
+  if (amount > 0) output = `+${formattedAmount}`;
+  if (amount < 0) output = `-${formattedAmount}`;
+}
+---
+
+<span>{output}</span>

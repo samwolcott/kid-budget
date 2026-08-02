@@ -1,0 +1,80 @@
+---
+import Card from "../ui/Card.astro";
+import Money from "../ui/Money.astro";
+import ProgressBar from "../ui/ProgressBar.astro";
+import { goalPercent } from "../../lib/money";
+
+interface Props {
+  id: string;
+  name: string;
+  emoji: string;
+  saved: number;
+  target: number;
+}
+
+const { id, name, emoji, saved, target } = Astro.props;
+
+const percent = goalPercent(saved, target);
+const remaining = Math.max(0, target - saved);
+const complete = saved >= target;
+---
+
+<Card class="p-5 sm:p-6">
+  <div class="flex items-start justify-between gap-4">
+    <div class="flex min-w-0 items-center gap-3">
+      <div
+        class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-2xl"
+        aria-hidden="true"
+      >
+        {emoji}
+      </div>
+
+      <div class="min-w-0">
+        <h3 class="truncate text-lg font-black text-slate-950">
+          {name}
+        </h3>
+
+        <p class="mt-1 text-sm text-slate-500">
+          <strong class="font-bold text-slate-700">
+            <Money amount={saved} />
+          </strong>
+          {" "}of{" "}
+          <Money amount={target} />
+        </p>
+      </div>
+    </div>
+
+    <span class="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-sm font-extrabold text-emerald-700">
+      {Math.round(percent)}%
+    </span>
+  </div>
+
+  <div class="mt-5">
+    <ProgressBar
+      value={percent}
+      label={`${name} savings progress`}
+    />
+  </div>
+
+  <div class="mt-4 flex items-center justify-between gap-4">
+    {
+      complete ? (
+        <p class="text-sm font-bold text-emerald-700">
+          Goal complete! 🎉
+        </p>
+      ) : (
+        <p class="text-sm text-slate-500">
+          <Money amount={remaining} /> left to go
+        </p>
+      )
+    }
+
+    <button
+      type="button"
+      class="inline-flex min-h-10 items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+      data-goal-id={id}
+    >
+      Add money
+    </button>
+  </div>
+</Card>

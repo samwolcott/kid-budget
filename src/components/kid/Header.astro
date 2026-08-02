@@ -1,0 +1,36 @@
+---
+interface Props {
+  name: string;
+  emoji: string;
+}
+
+const { name, emoji } = Astro.props;
+---
+
+<header class="mb-6 flex items-center justify-between gap-4">
+  <div class="flex items-center gap-4">
+    <div
+      class="grid h-14 w-14 place-items-center rounded-2xl bg-white text-3xl shadow-sm ring-1 ring-slate-200"
+      aria-hidden="true"
+    >
+      {emoji}
+    </div>
+
+    <div>
+      <p class="text-sm font-bold uppercase tracking-[0.18em] text-blue-600">
+        My account
+      </p>
+
+      <h1 class="mt-1 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+        {name}
+      </h1>
+    </div>
+  </div>
+
+  <a
+    href="/"
+    class="inline-flex min-h-11 items-center justify-center rounded-xl bg-white px-4 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    Switch
+  </a>
+</header>

@@ -1,0 +1,114 @@
+---
+import Card from "../ui/Card.astro";
+import Money from "../ui/Money.astro";
+import type { BucketType, Transaction } from "../../types";
+
+interface Props {
+  transactions: Transaction[];
+}
+
+const { transactions } = Astro.props;
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+});
+
+const bucketLabels: Record<BucketType, string> = {
+  spending: "Spending",
+  saving: "Saving",
+  giving: "Giving",
+};
+
+const bucketStyles: Record<BucketType, string> = {
+  spending: "bg-blue-50 text-blue-700",
+  saving: "bg-emerald-50 text-emerald-700",
+  giving: "bg-amber-50 text-amber-700",
+};
+
+const icons = {
+  allowance: "💰",
+  purchase: "🛍️",
+  transfer: "↔️",
+  goal: "🎯",
+  adjustment: "✏️",
+};
+
+const recentTransactions = transactions.slice(0, 5);
+---
+
+<section class="mt-10">
+  <div class="mb-4">
+    <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-slate-500">
+      Account history
+    </p>
+
+    <h2 class="mt-1 text-2xl font-black tracking-tight text-slate-950">
+      Recent activity
+    </h2>
+  </div>
+
+  <Card class="overflow-hidden">
+    {
+      recentTransactions.length > 0 ? (
+        <div class="divide-y divide-slate-100">
+          {recentTransactions.map((transaction) => (
+            <article class="flex items-center gap-4 p-4 sm:p-5">
+              <div
+                class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-100 text-xl"
+                aria-hidden="true"
+              >
+                {icons[transaction.type]}
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <h3 class="truncate text-sm font-black text-slate-900 sm:text-base">
+                  {transaction.description}
+                </h3>
+
+                <div class="mt-1 flex flex-wrap items-center gap-2">
+                  <span
+                    class:list={[
+                      "rounded-full px-2 py-0.5 text-xs font-bold",
+                      bucketStyles[transaction.bucket],
+                    ]}
+                  >
+                    {bucketLabels[transaction.bucket]}
+                  </span>
+
+                  <span class="text-xs text-slate-400">
+                    {dateFormatter.format(
+                      new Date(`${transaction.date}T12:00:00`),
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <strong
+                class:list={[
+                  "shrink-0 text-sm font-black sm:text-base",
+                  transaction.amount >= 0
+                    ? "text-emerald-600"
+                    : "text-slate-900",
+                ]}
+              >
+                <Money
+                  amount={transaction.amount}
+                  showSign={true}
+                />
+              </strong>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="p-8 text-center">
+          <div class="text-4xl" aria-hidden="true">📋</div>
+          <h3 class="mt-3 font-black">No activity yet</h3>
+          <p class="mt-2 text-sm text-slate-500">
+            Allowance payments and purchases will appear here.
+          </p>
+        </div>
+      )
+    }
+  </Card>
+</section>

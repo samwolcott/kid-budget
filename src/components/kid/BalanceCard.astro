@@ -1,0 +1,51 @@
+---
+import Money from "../ui/Money.astro";
+
+interface Props {
+  total: number;
+  unallocatedSavings?: number;
+}
+
+const { total, unallocatedSavings = 0 } = Astro.props;
+---
+
+<section class="overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-xl shadow-slate-300/60">
+  <div class="p-7 sm:p-9">
+    <div class="flex items-start justify-between gap-6">
+      <div>
+        <p class="text-xs font-extrabold uppercase tracking-[0.22em] text-slate-400">
+          Total balance
+        </p>
+
+        <div class="mt-3 text-5xl font-black tracking-tight sm:text-6xl">
+          <Money amount={total} />
+        </div>
+      </div>
+
+      <div
+        class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/10 text-2xl"
+        aria-hidden="true"
+      >
+        💰
+      </div>
+    </div>
+
+    <div class="mt-7 rounded-2xl bg-white/10 p-4 ring-1 ring-white/10">
+      {
+        unallocatedSavings > 0 ? (
+          <p class="text-sm leading-6 text-slate-200">
+            You have{" "}
+            <strong class="text-white">
+              <Money amount={unallocatedSavings} />
+            </strong>{" "}
+            in Saving that can be added to a goal.
+          </p>
+        ) : (
+          <p class="text-sm leading-6 text-slate-200">
+            Every dollar has a job. Nice work keeping your money organized.
+          </p>
+        )
+      }
+    </div>
+  </div>
+</section>

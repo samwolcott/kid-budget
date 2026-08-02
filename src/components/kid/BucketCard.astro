@@ -1,0 +1,70 @@
+---
+import Money from "../ui/Money.astro";
+
+interface Props {
+  icon: string;
+  title: string;
+  amount: number;
+  color: "blue" | "green" | "amber";
+}
+
+const { icon, title, amount, color } = Astro.props;
+
+const colors = {
+  blue: {
+    card: "bg-blue-50 ring-blue-100",
+    icon: "bg-blue-100",
+    label: "text-blue-700",
+    amount: "text-blue-950",
+  },
+  green: {
+    card: "bg-emerald-50 ring-emerald-100",
+    icon: "bg-emerald-100",
+    label: "text-emerald-700",
+    amount: "text-emerald-950",
+  },
+  amber: {
+    card: "bg-amber-50 ring-amber-100",
+    icon: "bg-amber-100",
+    label: "text-amber-700",
+    amount: "text-amber-950",
+  },
+};
+
+const selectedColor = colors[color];
+---
+
+<article
+  class:list={[
+    "min-w-0 rounded-2xl p-4 ring-1 sm:p-5",
+    selectedColor.card,
+  ]}
+>
+  <div
+    class:list={[
+      "grid h-10 w-10 place-items-center rounded-xl text-xl",
+      selectedColor.icon,
+    ]}
+    aria-hidden="true"
+  >
+    {icon}
+  </div>
+
+  <p
+    class:list={[
+      "mt-4 text-xs font-extrabold uppercase tracking-[0.12em]",
+      selectedColor.label,
+    ]}
+  >
+    {title}
+  </p>
+
+  <p
+    class:list={[
+      "mt-1 truncate text-xl font-black tracking-tight sm:text-2xl",
+      selectedColor.amount,
+    ]}
+  >
+    <Money amount={amount} />
+  </p>
+</article>

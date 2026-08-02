@@ -1,17 +1,77 @@
 ---
-
+import Layout from "../layouts/Layout.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout
+  title="The Family Bank"
+  description="Learn to spend, save, and give wisely."
+>
+  <main class="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center px-5 py-10">
+    <div class="text-center">
+      <div class="text-6xl">🏦</div>
+
+      <p class="mt-6 text-xs font-extrabold uppercase tracking-[0.2em] text-blue-600">
+        Welcome to
+      </p>
+
+      <h1 class="mt-2 text-5xl font-black tracking-tight text-slate-950">
+        The Family Bank
+      </h1>
+
+      <p class="mt-3 text-slate-500">
+        Learn to spend, save, and give wisely.
+      </p>
+    </div>
+
+    <div class="mt-10 grid gap-4">
+      <a
+        href="/kids/judah"
+        class="flex items-center gap-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
+      >
+        <span class="text-4xl">😎</span>
+
+        <span class="flex-1">
+          <strong class="block text-xl">
+            Judah
+          </strong>
+
+          <span class="text-sm text-slate-500">
+            Check your account
+          </span>
+        </span>
+
+        <span class="text-2xl text-slate-300">
+          →
+        </span>
+      </a>
+
+      <a
+        href="/kids/max"
+        class="flex items-center gap-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
+      >
+        <span class="text-4xl">🤘</span>
+
+        <span class="flex-1">
+          <strong class="block text-xl">
+            Max
+          </strong>
+
+          <span class="text-sm text-slate-500">
+            Check your account
+          </span>
+        </span>
+
+        <span class="text-2xl text-slate-300">
+          →
+        </span>
+      </a>
+    </div>
+
+    <a
+      href="/parent"
+      class="mx-auto mt-8 rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+    >
+      🔒 Parent Dashboard
+    </a>
+  </main>
+</Layout>

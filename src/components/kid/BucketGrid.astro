@@ -1,0 +1,35 @@
+---
+import BucketCard from "./BucketCard.astro";
+import type { BucketBalances } from "../../types";
+
+interface Props {
+  buckets: BucketBalances;
+}
+
+const { buckets } = Astro.props;
+---
+
+<section class="mt-6">
+  <div class="grid grid-cols-3 gap-2 sm:gap-4">
+    <BucketCard
+      icon="🛒"
+      title="Spending"
+      amount={buckets.spending}
+      color="blue"
+    />
+
+    <BucketCard
+      icon="🎯"
+      title="Saving"
+      amount={buckets.saving}
+      color="green"
+    />
+
+    <BucketCard
+      icon="❤️"
+      title="Giving"
+      amount={buckets.giving}
+      color="amber"
+    />
+  </div>
+</section>

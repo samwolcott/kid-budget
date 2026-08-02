@@ -1,0 +1,41 @@
+---
+import QuickActionCard from "./QuickActionCard.astro";
+---
+
+<section class="mt-10">
+  <div class="mb-4">
+    <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">
+      Money tools
+    </p>
+
+    <h2 class="mt-1 text-2xl font-black tracking-tight text-slate-950">
+      What would you like to do?
+    </h2>
+  </div>
+
+  <div class="grid gap-3 sm:grid-cols-3">
+    <QuickActionCard
+      emoji="💸"
+      title="I Bought Something"
+      description="Record a purchase"
+      action="purchase"
+      color="blue"
+    />
+
+    <QuickActionCard
+      emoji="↔️"
+      title="Move Money"
+      description="Change your buckets"
+      action="move"
+      color="violet"
+    />
+
+    <QuickActionCard
+      emoji="🧮"
+      title="Can I Buy It?"
+      description="Check before spending"
+      action="afford"
+      color="orange"
+    />
+  </div>
+</section>

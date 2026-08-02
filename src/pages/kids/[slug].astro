@@ -1,0 +1,132 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Header from "../../components/kid/Header.astro";
+import BalanceCard from "../../components/kid/BalanceCard.astro";
+import BucketGrid from "../../components/kid/BucketGrid.astro";
+import GoalList from "../../components/kid/GoalList.astro";
+import QuickActions from "../../components/kid/QuickActions.astro";
+import RecentActivity from "../../components/kid/RecentActivity.astro";
+
+import { getKid, getKids } from "../../lib/api";
+import { totalBalance } from "../../lib/money";
+
+export async function getStaticPaths() {
+  const kids = await getKids();
+
+  return kids.map((kid) => ({
+    params: {
+      slug: kid.slug,
+    },
+  }));
+}
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect("/");
+}
+
+const kid = await getKid(slug);
+
+if (!kid) {
+  return Astro.redirect("/");
+}
+
+const total = totalBalance(kid.buckets);
+
+const allocatedSavings = kid.goals.reduce(
+  (sum, goal) => sum + goal.saved,
+  0,
+);
+
+const unallocatedSavings = Math.max(
+  0,
+  kid.buckets.saving - allocatedSavings,
+);
+---
+
+<Layout
+  title={`${kid.name} | The Family Bank`}
+  description={`${kid.name}'s spending, saving, and giving dashboard.`}
+>
+  <main class="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
+    <Header
+      name={kid.name}
+      emoji={kid.emoji}
+    />
+
+    <BalanceCard
+      total={total}
+      unallocatedSavings={unallocatedSavings}
+    />
+
+    <BucketGrid buckets={kid.buckets} />
+
+    <GoalList goals={kid.goals} />
+
+    <QuickActions />
+
+    <RecentActivity transactions={kid.transactions} />
+
+    <footer class="mt-12 pb-4 text-center text-sm text-slate-400">
+      The Family Bank · Spend, save, and give wisely.
+    </footer>
+  </main>
+
+  <div
+    id="prototype-toast"
+    class="pointer-events-none fixed bottom-5 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 translate-y-5 rounded-2xl bg-slate-950 px-5 py-4 text-center text-sm font-bold text-white opacity-0 shadow-2xl transition-all duration-200"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+  <script>
+    const toast = document.querySelector("#prototype-toast");
+
+    let toastTimeout: number | undefined;
+
+    function showToast(message: string) {
+      if (!(toast instanceof HTMLElement)) {
+        return;
+      }
+
+      window.clearTimeout(toastTimeout);
+
+      toast.textContent = message;
+      toast.classList.remove("translate-y-5", "opacity-0");
+      toast.classList.add("translate-y-0", "opacity-100");
+
+      toastTimeout = window.setTimeout(() => {
+        toast.classList.remove("translate-y-0", "opacity-100");
+        toast.classList.add("translate-y-5", "opacity-0");
+      }, 2600);
+    }
+
+    document
+      .querySelectorAll<HTMLElement>("[data-action]")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          const action = button.dataset.action;
+
+          const messages: Record<string, string> = {
+            purchase: "The purchase request screen is coming next.",
+            move: "The Move Money screen is coming next.",
+            afford: "The Can I Buy It calculator is coming next.",
+          };
+
+          showToast(
+            messages[action ?? ""] ??
+              "This feature is coming next.",
+          );
+        });
+      });
+
+    document
+      .querySelectorAll<HTMLElement>("[data-goal-id]")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          showToast("Goal allocation is coming next.");
+        });
+      });
+  </script>
+</Layout>

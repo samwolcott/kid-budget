@@ -1,0 +1,130 @@
+import type { Kid } from "../types";
+
+export const kids: Record<string, Kid> = {
+  judah: {
+    id: "kid-judah",
+    slug: "judah",
+    name: "Judah",
+    emoji: "😎",
+    allowanceAmount: 20,
+    buckets: {
+      spending: 22.5,
+      saving: 32,
+      giving: 5,
+    },
+    goals: [
+      {
+        id: "goal-judah-switch-game",
+        name: "Nintendo Switch Game",
+        emoji: "🎮",
+        saved: 20,
+        target: 60,
+      },
+      {
+        id: "goal-judah-lego",
+        name: "LEGO Set",
+        emoji: "🧱",
+        saved: 12,
+        target: 40,
+      },
+    ],
+    transactions: [
+      {
+        id: "transaction-judah-1",
+        date: "2026-07-25",
+        description: "Allowance",
+        amount: 14,
+        bucket: "spending",
+        type: "allowance",
+      },
+      {
+        id: "transaction-judah-2",
+        date: "2026-07-25",
+        description: "Allowance",
+        amount: 4,
+        bucket: "saving",
+        type: "allowance",
+      },
+      {
+        id: "transaction-judah-3",
+        date: "2026-07-25",
+        description: "Allowance",
+        amount: 2,
+        bucket: "giving",
+        type: "allowance",
+      },
+      {
+        id: "transaction-judah-4",
+        date: "2026-07-23",
+        description: "Ice cream",
+        amount: -4.5,
+        bucket: "spending",
+        type: "purchase",
+      },
+      {
+        id: "transaction-judah-5",
+        date: "2026-07-20",
+        description: "Moved to Switch Game",
+        amount: 8,
+        bucket: "saving",
+        type: "goal",
+      },
+    ],
+  },
+
+  max: {
+    id: "kid-max",
+    slug: "max",
+    name: "Max",
+    emoji: "🤘",
+    allowanceAmount: 15,
+    buckets: {
+      spending: 18,
+      saving: 10,
+      giving: 3,
+    },
+    goals: [
+      {
+        id: "goal-max-pokemon",
+        name: "Pokémon Cards",
+        emoji: "⚡",
+        saved: 7,
+        target: 25,
+      },
+    ],
+    transactions: [
+      {
+        id: "transaction-max-1",
+        date: "2026-07-25",
+        description: "Allowance",
+        amount: 10.5,
+        bucket: "spending",
+        type: "allowance",
+      },
+      {
+        id: "transaction-max-2",
+        date: "2026-07-25",
+        description: "Allowance",
+        amount: 3,
+        bucket: "saving",
+        type: "allowance",
+      },
+      {
+        id: "transaction-max-3",
+        date: "2026-07-25",
+        description: "Allowance",
+        amount: 1.5,
+        bucket: "giving",
+        type: "allowance",
+      },
+      {
+        id: "transaction-max-4",
+        date: "2026-07-22",
+        description: "Candy",
+        amount: -2,
+        bucket: "spending",
+        type: "purchase",
+      },
+    ],
+  },
+};

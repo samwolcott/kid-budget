@@ -1,0 +1,64 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  emoji: string;
+  action: string;
+  color: "blue" | "violet" | "orange";
+}
+
+const { title, description, emoji, action, color } = Astro.props;
+
+const colors = {
+  blue: {
+    card: "hover:ring-blue-300",
+    icon: "bg-blue-50",
+  },
+  violet: {
+    card: "hover:ring-violet-300",
+    icon: "bg-violet-50",
+  },
+  orange: {
+    card: "hover:ring-orange-300",
+    icon: "bg-orange-50",
+  },
+};
+
+const selectedColor = colors[color];
+---
+
+<button
+  type="button"
+  data-action={action}
+  class:list={[
+    "group flex w-full items-center gap-4 rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500",
+    selectedColor.card,
+  ]}
+>
+  <span
+    class:list={[
+      "grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-2xl",
+      selectedColor.icon,
+    ]}
+    aria-hidden="true"
+  >
+    {emoji}
+  </span>
+
+  <span class="min-w-0 flex-1">
+    <span class="block text-base font-black text-slate-950">
+      {title}
+    </span>
+
+    <span class="mt-1 block text-sm text-slate-500">
+      {description}
+    </span>
+  </span>
+
+  <span
+    class="text-2xl font-light text-slate-300 transition group-hover:translate-x-1 group-hover:text-slate-500"
+    aria-hidden="true"
+  >
+    →
+  </span>
+</button>

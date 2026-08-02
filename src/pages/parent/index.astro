@@ -1,0 +1,701 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { kids as demoKids } from "../../data/demo";
+
+const demoJson = JSON.stringify(demoKids);
+---
+
+<Layout title="Parent Dashboard | The Family Bank">
+  <main class="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
+    <header class="mb-8 flex items-end justify-between gap-4">
+      <div>
+        <a
+          href="/"
+          class="text-sm font-bold text-slate-500"
+        >
+          ← The Family Bank
+        </a>
+
+        <p class="mt-5 text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">
+          Parent dashboard
+        </p>
+
+        <h1 class="mt-1 text-4xl font-black">
+          Family accounts
+        </h1>
+      </div>
+
+      <button
+        id="reset-button"
+        type="button"
+        class="rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+      >
+        Reset demo
+      </button>
+    </header>
+
+    <section class="rounded-3xl bg-slate-950 p-6 text-white sm:p-8">
+      <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-slate-400">
+        Allowance
+      </p>
+
+      <div class="mt-2 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+        <div>
+          <h2 class="text-2xl font-black">
+            Pay allowance
+          </h2>
+
+          <p class="mt-1 text-sm text-slate-300">
+            70% Spending · 20% Saving · 10% Giving
+          </p>
+        </div>
+
+        <button
+          id="allowance-button"
+          type="button"
+          class="rounded-xl bg-white px-5 py-3 font-bold text-slate-950 transition hover:bg-slate-100"
+        >
+          Pay Allowance
+        </button>
+      </div>
+    </section>
+
+    <section class="mt-10">
+      <div class="flex items-end justify-between">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-amber-600">
+            Needs your attention
+          </p>
+
+          <h2 class="mt-1 text-2xl font-black">
+            Purchase requests
+          </h2>
+        </div>
+
+        <span
+          id="request-count"
+          class="rounded-full bg-amber-50 px-3 py-1 text-sm font-bold text-amber-700"
+        >
+          0 pending
+        </span>
+      </div>
+
+      <div
+        id="request-list"
+        class="mt-4 grid gap-3"
+      ></div>
+    </section>
+
+    <section class="mt-10">
+      <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">
+        Accounts
+      </p>
+
+      <h2 class="mt-1 text-2xl font-black">
+        Judah and Max
+      </h2>
+
+      <div
+        id="kid-list"
+        class="mt-4 grid gap-4 sm:grid-cols-2"
+      ></div>
+    </section>
+  </main>
+
+  <dialog
+    id="allowance-dialog"
+    class="w-[calc(100%-2rem)] max-w-md rounded-3xl bg-white p-0 shadow-2xl backdrop:bg-slate-950/55"
+  >
+    <form
+      id="allowance-form"
+      class="p-6"
+    >
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-emerald-600">
+            Payday
+          </p>
+
+          <h2 class="mt-1 text-2xl font-black">
+            Pay allowance
+          </h2>
+
+          <p class="mt-2 text-sm leading-6 text-slate-500">
+            Choose who gets paid. Each allowance will automatically split 70/20/10.
+          </p>
+        </div>
+
+        <button
+          id="close-allowance-dialog"
+          type="button"
+          class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl text-slate-600"
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+
+      <div
+        id="allowance-kids"
+        class="mt-6 grid gap-3"
+      ></div>
+
+      <div class="mt-5 grid grid-cols-3 gap-2 text-center">
+        <div class="rounded-xl bg-blue-50 p-3">
+          <span class="block text-xs font-bold text-blue-700">
+            Spending
+          </span>
+
+          <strong class="mt-1 block text-blue-950">
+            70%
+          </strong>
+        </div>
+
+        <div class="rounded-xl bg-emerald-50 p-3">
+          <span class="block text-xs font-bold text-emerald-700">
+            Saving
+          </span>
+
+          <strong class="mt-1 block text-emerald-950">
+            20%
+          </strong>
+        </div>
+
+        <div class="rounded-xl bg-amber-50 p-3">
+          <span class="block text-xs font-bold text-amber-700">
+            Giving
+          </span>
+
+          <strong class="mt-1 block text-amber-950">
+            10%
+          </strong>
+        </div>
+      </div>
+
+      <p
+        id="allowance-error"
+        class="mt-4 hidden rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700"
+      ></p>
+
+      <button
+        type="submit"
+        class="mt-6 w-full rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white transition hover:bg-emerald-700"
+      >
+        Pay Selected Allowances
+      </button>
+    </form>
+  </dialog>
+
+  <div
+    id="toast"
+    class="pointer-events-none fixed bottom-5 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 translate-y-5 rounded-2xl bg-slate-950 px-5 py-4 text-center text-sm font-bold text-white opacity-0 shadow-2xl transition-all duration-200"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+  <script
+    type="application/json"
+    id="demo-kids"
+    set:html={demoJson}
+  ></script>
+
+  <script>
+    import type {
+      Kid,
+    } from "../../types";
+
+    import {
+      loadState,
+      payAllowance,
+      resetState,
+      saveState,
+    } from "../../lib/store";
+
+    const demoElement =
+      document.querySelector("#demo-kids");
+
+    const demoKids = demoElement
+      ? JSON.parse(
+          demoElement.textContent || "{}",
+        ) as Record<string, Kid>
+      : {};
+
+    let state = loadState(demoKids);
+
+    const money = new Intl.NumberFormat(
+      "en-US",
+      {
+        style: "currency",
+        currency: "USD",
+      },
+    );
+
+    const allowanceButton =
+      document.querySelector(
+        "#allowance-button",
+      );
+
+    const allowanceDialog =
+      document.querySelector(
+        "#allowance-dialog",
+      );
+
+    const allowanceForm =
+      document.querySelector(
+        "#allowance-form",
+      );
+
+    const allowanceKids =
+      document.querySelector(
+        "#allowance-kids",
+      );
+
+    const allowanceError =
+      document.querySelector(
+        "#allowance-error",
+      );
+
+    const closeAllowanceDialog =
+      document.querySelector(
+        "#close-allowance-dialog",
+      );
+
+    const resetButton =
+      document.querySelector(
+        "#reset-button",
+      );
+
+    const toast =
+      document.querySelector("#toast");
+
+    let toastTimeout:
+      | number
+      | undefined;
+
+    function showToast(
+      message: string,
+    ): void {
+      if (!(toast instanceof HTMLElement)) {
+        return;
+      }
+
+      window.clearTimeout(toastTimeout);
+
+      toast.textContent = message;
+
+      toast.classList.remove(
+        "translate-y-5",
+        "opacity-0",
+      );
+
+      toast.classList.add(
+        "translate-y-0",
+        "opacity-100",
+      );
+
+      toastTimeout = window.setTimeout(
+        () => {
+          toast.classList.remove(
+            "translate-y-0",
+            "opacity-100",
+          );
+
+          toast.classList.add(
+            "translate-y-5",
+            "opacity-0",
+          );
+        },
+        2600,
+      );
+    }
+
+    function renderAllowanceKids(): void {
+      if (
+        !(allowanceKids instanceof HTMLElement)
+      ) {
+        return;
+      }
+
+      allowanceKids.innerHTML =
+        Object.values(state.kids)
+          .map(
+            (kid) => `
+              <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 p-4 transition has-[:checked]:border-emerald-300 has-[:checked]:bg-emerald-50">
+                <input
+                  type="checkbox"
+                  name="kid"
+                  value="${kid.slug}"
+                  checked
+                  class="h-5 w-5 accent-emerald-600"
+                />
+
+                <span class="text-2xl">
+                  ${kid.emoji}
+                </span>
+
+                <span class="min-w-0 flex-1">
+                  <strong class="block">
+                    ${kid.name}
+                  </strong>
+
+                  <span class="text-sm text-slate-500">
+                    ${money.format(kid.allowanceAmount)}
+                  </span>
+                </span>
+
+                <span class="text-sm font-bold text-emerald-700">
+                  Pay
+                </span>
+              </label>
+            `,
+          )
+          .join("");
+    }
+
+    function render(): void {
+      const requestList =
+        document.querySelector(
+          "#request-list",
+        );
+
+      const requestCount =
+        document.querySelector(
+          "#request-count",
+        );
+
+      const kidList =
+        document.querySelector(
+          "#kid-list",
+        );
+
+      if (
+        !(requestList instanceof HTMLElement) ||
+        !(requestCount instanceof HTMLElement) ||
+        !(kidList instanceof HTMLElement)
+      ) {
+        return;
+      }
+
+      const pending =
+        state.purchaseRequests.filter(
+          (request) =>
+            request.status === "pending",
+        );
+
+      requestCount.textContent =
+        `${pending.length} pending`;
+
+      requestList.innerHTML =
+        pending.length > 0
+          ? pending
+              .map(
+                (request) => `
+                  <article class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+                    <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                      <div>
+                        <p class="text-sm font-bold text-slate-500">
+                          ${request.kidName} wants to record
+                        </p>
+
+                        <h3 class="mt-1 text-lg font-black">
+                          ${request.description}
+                        </h3>
+
+                        <p class="mt-1 text-sm capitalize text-slate-500">
+                          ${money.format(request.amount)}
+                          from ${request.bucket}
+                        </p>
+                      </div>
+
+                      <div class="flex gap-2">
+                        <button
+                          data-decline="${request.id}"
+                          class="rounded-xl bg-red-50 px-4 py-3 font-bold text-red-700"
+                        >
+                          Decline
+                        </button>
+
+                        <button
+                          data-approve="${request.id}"
+                          class="rounded-xl bg-emerald-600 px-4 py-3 font-bold text-white"
+                        >
+                          Approve
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                `,
+              )
+              .join("")
+          : `
+              <div class="rounded-2xl bg-white p-8 text-center text-slate-500 ring-1 ring-slate-200">
+                Nothing waiting for approval. 👍
+              </div>
+            `;
+
+      kidList.innerHTML =
+        Object.values(state.kids)
+          .map((kid) => {
+            const total =
+              kid.buckets.spending +
+              kid.buckets.saving +
+              kid.buckets.giving;
+
+            return `
+              <a
+                href="/kids/${kid.slug}"
+                class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <div class="flex items-center gap-3">
+                  <span class="text-3xl">
+                    ${kid.emoji}
+                  </span>
+
+                  <div>
+                    <h3 class="text-xl font-black">
+                      ${kid.name}
+                    </h3>
+
+                    <p class="text-sm text-slate-500">
+                      ${money.format(total)} total
+                    </p>
+                  </div>
+                </div>
+
+                <div class="mt-5 grid grid-cols-3 gap-2 text-center text-xs font-bold">
+                  <div class="rounded-xl bg-blue-50 p-3 text-blue-800">
+                    Spend<br />
+                    ${money.format(kid.buckets.spending)}
+                  </div>
+
+                  <div class="rounded-xl bg-emerald-50 p-3 text-emerald-800">
+                    Save<br />
+                    ${money.format(kid.buckets.saving)}
+                  </div>
+
+                  <div class="rounded-xl bg-amber-50 p-3 text-amber-800">
+                    Give<br />
+                    ${money.format(kid.buckets.giving)}
+                  </div>
+                </div>
+              </a>
+            `;
+          })
+          .join("");
+
+      document
+        .querySelectorAll<HTMLElement>(
+          "[data-decline]",
+        )
+        .forEach((button) => {
+          button.onclick = () => {
+            const request =
+              state.purchaseRequests.find(
+                (item) =>
+                  item.id ===
+                  button.dataset.decline,
+              );
+
+            if (!request) {
+              return;
+            }
+
+            request.status = "declined";
+
+            saveState(state);
+            render();
+
+            showToast(
+              "Purchase declined.",
+            );
+          };
+        });
+
+      document
+        .querySelectorAll<HTMLElement>(
+          "[data-approve]",
+        )
+        .forEach((button) => {
+          button.onclick = () => {
+            const request =
+              state.purchaseRequests.find(
+                (item) =>
+                  item.id ===
+                  button.dataset.approve,
+              );
+
+            if (!request) {
+              return;
+            }
+
+            const kid =
+              Object.values(
+                state.kids,
+              ).find(
+                (item) =>
+                  item.id ===
+                  request.kidId,
+              );
+
+            if (
+              !kid ||
+              kid.buckets[
+                request.bucket
+              ] < request.amount
+            ) {
+              window.alert(
+                "That bucket no longer has enough money.",
+              );
+
+              return;
+            }
+
+            kid.buckets[
+              request.bucket
+            ] = Math.round(
+              (
+                kid.buckets[
+                  request.bucket
+                ] -
+                request.amount
+              ) *
+                100,
+            ) / 100;
+
+            kid.transactions.unshift({
+              id: crypto.randomUUID(),
+              date: new Date()
+                .toISOString()
+                .slice(0, 10),
+              description:
+                request.description,
+              amount:
+                -request.amount,
+              bucket:
+                request.bucket,
+              type: "purchase",
+            });
+
+            request.status = "approved";
+
+            saveState(state);
+            render();
+
+            showToast(
+              "Purchase approved!",
+            );
+          };
+        });
+    }
+
+    allowanceButton?.addEventListener(
+      "click",
+      () => {
+        renderAllowanceKids();
+
+        if (
+          allowanceError instanceof HTMLElement
+        ) {
+          allowanceError.classList.add(
+            "hidden",
+          );
+        }
+
+        if (
+          allowanceDialog instanceof HTMLDialogElement
+        ) {
+          allowanceDialog.showModal();
+        }
+      },
+    );
+
+    closeAllowanceDialog?.addEventListener(
+      "click",
+      () => {
+        if (
+          allowanceDialog instanceof HTMLDialogElement
+        ) {
+          allowanceDialog.close();
+        }
+      },
+    );
+
+    allowanceForm?.addEventListener(
+      "submit",
+      (event) => {
+        event.preventDefault();
+
+        if (
+          !(allowanceForm instanceof HTMLFormElement)
+        ) {
+          return;
+        }
+
+        const formData =
+          new FormData(allowanceForm);
+
+        const selectedSlugs =
+          formData
+            .getAll("kid")
+            .map(String);
+
+        try {
+          payAllowance(
+            state,
+            selectedSlugs,
+          );
+
+          saveState(state);
+          render();
+
+          if (
+            allowanceDialog instanceof HTMLDialogElement
+          ) {
+            allowanceDialog.close();
+          }
+
+          showToast(
+            "Allowance paid! 🎉",
+          );
+        } catch (error) {
+          if (
+            allowanceError instanceof HTMLElement
+          ) {
+            allowanceError.textContent =
+              error instanceof Error
+                ? error.message
+                : "Unable to pay allowance.";
+
+            allowanceError.classList.remove(
+              "hidden",
+            );
+          }
+        }
+      },
+    );
+
+    resetButton?.addEventListener(
+      "click",
+      () => {
+        const confirmed =
+          window.confirm(
+            "Reset all browser data back to the original demo balances?",
+          );
+
+        if (!confirmed) {
+          return;
+        }
+
+        resetState();
+        state = loadState(demoKids);
+        render();
+
+        showToast(
+          "Demo data reset.",
+        );
+      },
+    );
+
+    render();
+  </script>
+</Layout>
