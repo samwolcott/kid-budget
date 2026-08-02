@@ -299,6 +299,52 @@ export function createGoal(
   });
 }
 
+export function editGoal(
+  state: FamilyBankState,
+  slug: string,
+  goalId: string,
+  name: string,
+  target: number,
+  emoji: string,
+): void {
+  const kid = state.kids[slug];
+
+  if (!kid) {
+    throw new Error("Kid account not found.");
+  }
+
+  const goal = kid.goals.find(
+    (item) => item.id === goalId,
+  );
+
+  if (!goal) {
+    throw new Error("Savings goal not found.");
+  }
+
+  const trimmedName = name.trim();
+  const trimmedEmoji = emoji.trim();
+
+  if (!trimmedName) {
+    throw new Error("Give your goal a name.");
+  }
+
+  if (!Number.isFinite(target) || target <= 0) {
+    throw new Error("Enter a target greater than $0.");
+  }
+
+  const roundedTarget = roundCurrency(target);
+
+  if (roundedTarget < goal.saved) {
+    throw new Error(
+      `Your target must be at least $${goal.saved.toFixed(2)} because that amount is already saved.`,
+    );
+  }
+
+  goal.name = trimmedName;
+  goal.emoji = trimmedEmoji || "🎯";
+  goal.target = roundedTarget;
+}
+
 export function allocateToGoal(
   state: FamilyBankState,
   slug: string,

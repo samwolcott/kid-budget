@@ -247,6 +247,65 @@ const demoJson = JSON.stringify(demoKids);
   </dialog>
 
   <dialog
+    id="edit-goal-dialog"
+    class="fixed inset-0 m-auto max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-3xl bg-white p-0 shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
+  >
+    <form id="edit-goal-form" class="p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">
+            Edit savings goal
+          </p>
+          <h2 class="mt-1 text-2xl font-black">Update your goal</h2>
+          <p class="mt-2 text-sm leading-6 text-slate-500">
+            Change the icon, name, or target. Money already saved stays in the goal.
+          </p>
+        </div>
+        <button id="close-edit-goal-dialog" type="button" class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200" aria-label="Close">×</button>
+      </div>
+
+      <fieldset class="mt-6">
+        <legend class="text-sm font-bold text-slate-700">Choose an icon</legend>
+
+        <div class="mt-3 flex items-center gap-4 rounded-2xl bg-blue-50 p-4 ring-1 ring-blue-100">
+          <div
+            id="selected-edit-goal-emoji"
+            class="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white text-4xl shadow-sm ring-2 ring-blue-500"
+            aria-hidden="true"
+          >
+            🎯
+          </div>
+          <div>
+            <strong class="block text-slate-900">Selected icon</strong>
+            <span class="mt-1 block text-sm text-slate-500">Tap an emoji below to change it.</span>
+          </div>
+        </div>
+
+        <input id="edit-goal-emoji-input" name="emoji" type="hidden" value="🎯" />
+        <div id="edit-goal-emoji-picker" class="mt-4 grid grid-cols-6 gap-2 sm:grid-cols-8" aria-label="Choose a goal icon"></div>
+      </fieldset>
+
+      <label class="mt-4 block text-sm font-bold text-slate-700">
+        Goal name
+        <input id="edit-goal-name" name="name" type="text" maxlength="80" required class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+      </label>
+
+      <label class="mt-4 block text-sm font-bold text-slate-700">
+        Target price
+        <span class="mt-2 flex items-center rounded-xl border border-slate-200 px-4 transition focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
+          <span class="font-bold text-slate-400">$</span>
+          <input id="edit-goal-target" name="target" type="number" min="0.01" step="0.01" inputmode="decimal" required class="min-w-0 w-full bg-transparent px-2 py-3 outline-none" />
+        </span>
+      </label>
+
+      <input id="edit-goal-id" name="goalId" type="hidden" />
+      <p id="edit-goal-saved-help" class="mt-3 text-sm text-slate-500"></p>
+      <p id="edit-goal-error" class="mt-4 hidden rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700"></p>
+      <button id="save-edit-goal" type="submit" class="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500">Save Changes</button>
+    </form>
+  </dialog>
+
+  <dialog
     id="allocate-goal-dialog"
     class="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl bg-white p-0 shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
   >
@@ -375,6 +434,7 @@ const demoJson = JSON.stringify(demoKids);
       createGoal,
       createPurchaseRequest,
       deleteGoal,
+      editGoal,
       loadState,
       removeFromGoal,
       saveState,
@@ -437,6 +497,19 @@ const demoJson = JSON.stringify(demoKids);
     const selectedGoalEmoji = document.querySelector(
       "#selected-goal-emoji",
     );
+
+    const editGoalDialog = document.querySelector("#edit-goal-dialog");
+    const editGoalForm = document.querySelector("#edit-goal-form");
+    const closeEditGoalDialog = document.querySelector("#close-edit-goal-dialog");
+    const editGoalEmojiPicker = document.querySelector("#edit-goal-emoji-picker");
+    const editGoalEmojiInput = document.querySelector("#edit-goal-emoji-input");
+    const selectedEditGoalEmoji = document.querySelector("#selected-edit-goal-emoji");
+    const editGoalName = document.querySelector("#edit-goal-name");
+    const editGoalTarget = document.querySelector("#edit-goal-target");
+    const editGoalId = document.querySelector("#edit-goal-id");
+    const editGoalSavedHelp = document.querySelector("#edit-goal-saved-help");
+    const editGoalError = document.querySelector("#edit-goal-error");
+    const saveEditGoal = document.querySelector("#save-edit-goal");
 
     const allocateGoalDialog = document.querySelector(
       "#allocate-goal-dialog",
@@ -624,6 +697,78 @@ const demoJson = JSON.stringify(demoKids);
       setSelectedGoalEmoji("🎯");
     }
 
+    function setSelectedEditGoalEmoji(emoji: string): void {
+      if (editGoalEmojiInput instanceof HTMLInputElement) {
+        editGoalEmojiInput.value = emoji;
+      }
+
+      if (selectedEditGoalEmoji instanceof HTMLElement) {
+        selectedEditGoalEmoji.textContent = emoji;
+      }
+
+      editGoalEmojiPicker
+        ?.querySelectorAll<HTMLButtonElement>("[data-edit-goal-emoji]")
+        .forEach((button) => {
+          const selected = button.dataset.editGoalEmoji === emoji;
+          button.classList.toggle("bg-blue-600", selected);
+          button.classList.toggle("ring-2", selected);
+          button.classList.toggle("ring-blue-700", selected);
+          button.classList.toggle("scale-105", selected);
+          button.classList.toggle("bg-slate-100", !selected);
+          button.classList.toggle("hover:bg-slate-200", !selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+    }
+
+    function renderEditGoalEmojiPicker(): void {
+      if (!(editGoalEmojiPicker instanceof HTMLElement)) return;
+
+      editGoalEmojiPicker.innerHTML = goalEmojis
+        .map(
+          (emoji) => `
+            <button
+              type="button"
+              data-edit-goal-emoji="${emoji}"
+              class="grid aspect-square min-h-11 place-items-center rounded-xl bg-slate-100 text-2xl transition hover:-translate-y-0.5 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Choose ${emoji}"
+              aria-pressed="false"
+            >
+              ${emoji}
+            </button>
+          `,
+        )
+        .join("");
+
+      editGoalEmojiPicker
+        .querySelectorAll<HTMLButtonElement>("[data-edit-goal-emoji]")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            const emoji = button.dataset.editGoalEmoji;
+            if (emoji) {
+              setSelectedEditGoalEmoji(emoji);
+              updateEditGoalButton();
+            }
+          });
+        });
+    }
+
+    function updateEditGoalButton(): void {
+      if (!currentKid || !(saveEditGoal instanceof HTMLButtonElement)) return;
+      const goalId = editGoalId instanceof HTMLInputElement ? editGoalId.value : "";
+      const goal = currentKid.goals.find((item) => item.id === goalId);
+      if (!goal) {
+        saveEditGoal.disabled = true;
+        return;
+      }
+
+      const name = editGoalName instanceof HTMLInputElement ? editGoalName.value.trim() : "";
+      const target = editGoalTarget instanceof HTMLInputElement ? Number(editGoalTarget.value) : 0;
+      const emoji = editGoalEmojiInput instanceof HTMLInputElement ? editGoalEmojiInput.value : "🎯";
+      const changed = name !== goal.name || target !== goal.target || emoji !== goal.emoji;
+      const valid = name.length > 0 && Number.isFinite(target) && target >= goal.saved && target > 0;
+      saveEditGoal.disabled = !changed || !valid;
+    }
+
     function escapeHtml(value: string): string {
       const element = document.createElement("div");
       element.textContent = value;
@@ -755,6 +900,14 @@ const demoJson = JSON.stringify(demoKids);
                 </p>
 
                 <div class="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    data-edit-goal-id="${goal.id}"
+                    class="inline-flex min-h-10 items-center justify-center rounded-xl bg-blue-50 px-3 text-sm font-bold text-blue-700 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Edit
+                  </button>
+
                   ${goal.saved > 0 ? `
                     <button
                       type="button"
@@ -1078,6 +1231,33 @@ const demoJson = JSON.stringify(demoKids);
       window.setTimeout(() => newGoalForm?.querySelector<HTMLInputElement>('[name="name"]')?.focus(), 0);
     }
 
+    function openEditGoalDialog(goalId: string): void {
+      if (!currentKid || !(editGoalDialog instanceof HTMLDialogElement)) return;
+      const goal = currentKid.goals.find((item) => item.id === goalId);
+      if (!goal) return;
+
+      if (editGoalId instanceof HTMLInputElement) editGoalId.value = goal.id;
+      if (editGoalName instanceof HTMLInputElement) editGoalName.value = goal.name;
+      if (editGoalTarget instanceof HTMLInputElement) {
+        editGoalTarget.value = goal.target.toFixed(2);
+        editGoalTarget.min = Math.max(0.01, goal.saved).toFixed(2);
+      }
+      if (editGoalSavedHelp instanceof HTMLElement) {
+        editGoalSavedHelp.textContent = goal.saved > 0
+          ? `${money.format(goal.saved)} is already saved, so the target cannot be lower than that.`
+          : "No money is allocated yet, so you can choose any target above $0.";
+      }
+      if (editGoalError instanceof HTMLElement) {
+        editGoalError.classList.add("hidden");
+        editGoalError.textContent = "";
+      }
+
+      setSelectedEditGoalEmoji(goal.emoji);
+      updateEditGoalButton();
+      editGoalDialog.showModal();
+      window.setTimeout(() => editGoalName instanceof HTMLInputElement && editGoalName.focus(), 0);
+    }
+
     function openAllocateGoalDialog(goalId: string): void {
       if (!currentKid || !(allocateGoalDialog instanceof HTMLDialogElement)) return;
       const goal = currentKid.goals.find((item) => item.id === goalId);
@@ -1196,6 +1376,15 @@ const demoJson = JSON.stringify(demoKids);
         });
 
       document
+        .querySelectorAll<HTMLElement>("[data-edit-goal-id]")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            const goalId = button.dataset.editGoalId;
+            if (goalId) openEditGoalDialog(goalId);
+          });
+        });
+
+      document
         .querySelectorAll<HTMLElement>("[data-remove-goal-id]")
         .forEach((button) => {
           button.addEventListener("click", () => {
@@ -1303,6 +1492,44 @@ const demoJson = JSON.stringify(demoKids);
         }
       },
     );
+
+    closeEditGoalDialog?.addEventListener("click", () => {
+      if (editGoalDialog instanceof HTMLDialogElement) editGoalDialog.close();
+    });
+
+    editGoalDialog?.addEventListener("click", (event) => {
+      if (editGoalDialog instanceof HTMLDialogElement && event.target === editGoalDialog) editGoalDialog.close();
+    });
+
+    editGoalName?.addEventListener("input", updateEditGoalButton);
+    editGoalTarget?.addEventListener("input", updateEditGoalButton);
+
+    editGoalForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!(editGoalForm instanceof HTMLFormElement) || !currentState || !currentKid) return;
+      const data = new FormData(editGoalForm);
+
+      try {
+        editGoal(
+          currentState,
+          currentKid.slug,
+          String(data.get("goalId") ?? ""),
+          String(data.get("name") ?? ""),
+          Number(data.get("target")),
+          String(data.get("emoji") ?? "🎯"),
+        );
+        saveState(currentState);
+        currentKid = currentState.kids[currentKid.slug];
+        renderDashboard(currentKid);
+        editGoalDialog instanceof HTMLDialogElement && editGoalDialog.close();
+        showToast("Goal updated! ✏️");
+      } catch (error) {
+        if (editGoalError instanceof HTMLElement) {
+          editGoalError.textContent = error instanceof Error ? error.message : "Unable to update the goal.";
+          editGoalError.classList.remove("hidden");
+        }
+      }
+    });
 
     closeNewGoalDialog?.addEventListener("click", () => {
       if (newGoalDialog instanceof HTMLDialogElement) newGoalDialog.close();
@@ -1449,6 +1676,7 @@ const demoJson = JSON.stringify(demoKids);
     });
 
     renderGoalEmojiPicker();
+    renderEditGoalEmojiPicker();
 
     if (
       dashboard instanceof HTMLElement &&
