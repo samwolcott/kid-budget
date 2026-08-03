@@ -19,10 +19,11 @@
 - [x] Empty states
 - [x] Better history
 - [x] Confetti
+- [ ] Supabase migration ([plan](SUPABASE.md))
 - [ ] PWA
 
 ## Someday
 
 - [ ] Accounts
-- [ ] Sync
+- [ ] Realtime sync
 - [ ] Notifications
