@@ -56,3 +56,12 @@ PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 Both browser-safe values are available from the Supabase project Connect dialog. Never place a database password or service-role key in a `PUBLIC_*` variable or commit it to the repository.
 
 Database changes live in `supabase/migrations/`. Apply them through the connected Supabase GitHub deployment or the Supabase CLI; do not recreate the schema manually in the dashboard.
+
+Parent authentication uses Supabase email and password accounts. In Supabase, keep the Email provider enabled and add both the local parent page and deployed parent page to **Authentication → URL Configuration → Redirect URLs**:
+
+```text
+http://localhost:4321/parent/
+https://samwolcott.github.io/kid-budget/parent/
+```
+
+Signing in creates or restores the parent's family account, but budgeting data remains in LocalStorage until a later migration sprint.

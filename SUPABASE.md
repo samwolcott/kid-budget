@@ -202,11 +202,11 @@ Acceptance criteria:
 
 ### Sprint S3 — Parent Authentication
 
-- [ ] Add parent sign-in, session restoration, and sign-out.
-- [ ] Create or load the authenticated parent's family.
-- [ ] Add loading and authentication-error states matching the current design.
-- [ ] Keep budgeting data in LocalStorage.
-- [ ] Preserve a signed-out local demo mode.
+- [x] Add parent sign-in, session restoration, and sign-out.
+- [x] Create or load the authenticated parent's family.
+- [x] Add loading and authentication-error states matching the current design.
+- [x] Keep budgeting data in LocalStorage.
+- [x] Preserve a signed-out local demo mode.
 
 Acceptance criteria:
 

@@ -1,3 +1,7 @@
+## Supabase Sprint S3
+
+Added parent email/password authentication, persistent session restoration, family account setup, sign-out, and signed-out local demo mode while keeping all budgeting data in LocalStorage.
+
 ## Supabase Sprint S2
 
 Added the optional Supabase browser client, normalized database migrations, parent-isolated RLS policies, atomic financial functions, and database security tests while keeping LocalStorage active.

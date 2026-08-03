@@ -1,0 +1,189 @@
+<section
+  id="parent-account"
+  class="mb-8 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200"
+  aria-live="polite"
+>
+  <div id="auth-loading" class="flex items-center gap-4 p-5 sm:p-6">
+    <span class="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-2xl" aria-hidden="true">🔐</span>
+    <div>
+      <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">Parent account</p>
+      <p class="mt-1 font-bold text-slate-700">Checking your sign-in…</p>
+    </div>
+  </div>
+
+  <div id="auth-unavailable" class="hidden p-5 sm:p-6">
+    <div class="flex items-start gap-4">
+      <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-amber-50 text-2xl" aria-hidden="true">🏠</span>
+      <div>
+        <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-amber-600">Local demo mode</p>
+        <h2 class="mt-1 text-xl font-black">This device is keeping your data</h2>
+        <p class="mt-2 text-sm leading-6 text-slate-500">Add the public Supabase settings to enable parent sign-in. All budgeting tools still work and save locally.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="auth-signed-out" class="hidden p-5 sm:p-6">
+    <div class="flex items-start gap-4">
+      <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-blue-50 text-2xl" aria-hidden="true">👋</span>
+      <div>
+        <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">Parent account</p>
+        <h2 class="mt-1 text-xl font-black">Sign in once on this device</h2>
+        <p class="mt-2 text-sm leading-6 text-slate-500">Your budget stays in local demo mode for now. Signing in prepares this device for family sync later.</p>
+      </div>
+    </div>
+
+    <form id="auth-form" class="mt-5 grid gap-4 sm:grid-cols-2">
+      <label class="text-sm font-bold text-slate-700">
+        Email
+        <input name="email" type="email" autocomplete="email" required class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+      </label>
+      <label class="text-sm font-bold text-slate-700">
+        Password
+        <input name="password" type="password" autocomplete="current-password" minlength="6" required class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+      </label>
+      <p id="auth-error" class="hidden rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700 sm:col-span-2"></p>
+      <p id="auth-message" class="hidden rounded-xl bg-emerald-50 p-3 text-sm font-bold text-emerald-700 sm:col-span-2"></p>
+      <div class="flex flex-wrap gap-3 sm:col-span-2">
+        <button data-auth-action="sign-in" type="submit" class="rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60">Sign In</button>
+        <button data-auth-action="create" type="button" class="rounded-xl bg-white px-5 py-3 font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60">Create Parent Account</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="auth-signed-in" class="hidden p-5 sm:p-6">
+    <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <div class="flex items-start gap-4">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-2xl" aria-hidden="true">✅</span>
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-emerald-600">Parent signed in</p>
+          <h2 id="auth-family-name" class="mt-1 text-xl font-black">The Family Bank</h2>
+          <p class="mt-1 text-sm text-slate-500"><span id="auth-email"></span> · Budget data still saves on this device.</p>
+        </div>
+      </div>
+      <button id="auth-sign-out" type="button" class="rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60">Sign Out</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  import {
+    createParentAccount,
+    loadParentAccount,
+    signInParent,
+    signOutParent,
+    type ParentAccount,
+  } from "../../lib/auth";
+  import { getSupabaseClient } from "../../lib/supabase";
+
+  const loading = document.querySelector<HTMLElement>("#auth-loading");
+  const unavailable = document.querySelector<HTMLElement>("#auth-unavailable");
+  const signedOut = document.querySelector<HTMLElement>("#auth-signed-out");
+  const signedIn = document.querySelector<HTMLElement>("#auth-signed-in");
+  const form = document.querySelector<HTMLFormElement>("#auth-form");
+  const error = document.querySelector<HTMLElement>("#auth-error");
+  const message = document.querySelector<HTMLElement>("#auth-message");
+  const familyName = document.querySelector<HTMLElement>("#auth-family-name");
+  const email = document.querySelector<HTMLElement>("#auth-email");
+  const signOutButton = document.querySelector<HTMLButtonElement>("#auth-sign-out");
+  const createButton = document.querySelector<HTMLButtonElement>("[data-auth-action='create']");
+  const client = getSupabaseClient();
+
+  function show(view: HTMLElement | null): void {
+    [loading, unavailable, signedOut, signedIn].forEach((item) => item?.classList.add("hidden"));
+    view?.classList.remove("hidden");
+  }
+
+  function showError(text: string): void {
+    if (!error) return;
+    error.textContent = text;
+    error.classList.remove("hidden");
+    message?.classList.add("hidden");
+  }
+
+  function setBusy(busy: boolean): void {
+    form?.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
+      button.disabled = busy;
+    });
+  }
+
+  function showAccount(account: ParentAccount): void {
+    if (familyName) familyName.textContent = account.family.name;
+    if (email) email.textContent = account.session.user.email ?? "Parent account";
+    show(signedIn);
+  }
+
+  async function submit(action: "sign-in" | "create"): Promise<void> {
+    if (!client || !form) return;
+    if (!form.reportValidity()) return;
+
+    error?.classList.add("hidden");
+    message?.classList.add("hidden");
+    setBusy(true);
+
+    const data = new FormData(form);
+    const parentEmail = String(data.get("email") ?? "").trim();
+    const password = String(data.get("password") ?? "");
+
+    try {
+      const account = action === "sign-in"
+        ? await signInParent(client, parentEmail, password)
+        : await createParentAccount(
+            client,
+            parentEmail,
+            password,
+            window.location.href,
+          );
+
+      if (account) {
+        showAccount(account);
+      } else if (message) {
+        message.textContent = "Check your email to confirm your account, then come back and sign in.";
+        message.classList.remove("hidden");
+      }
+    } catch (caught) {
+      showError(caught instanceof Error ? caught.message : "Something went wrong. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    void submit("sign-in");
+  });
+
+  createButton?.addEventListener("click", () => void submit("create"));
+
+  signOutButton?.addEventListener("click", async () => {
+    if (!client) return;
+    signOutButton.disabled = true;
+
+    try {
+      await signOutParent(client);
+      form?.reset();
+      show(signedOut);
+    } catch (caught) {
+      show(signedIn);
+      showError(caught instanceof Error ? caught.message : "Unable to sign out.");
+    } finally {
+      signOutButton.disabled = false;
+    }
+  });
+
+  async function initialize(): Promise<void> {
+    if (!client) {
+      show(unavailable);
+      return;
+    }
+
+    try {
+      const account = await loadParentAccount(client);
+      account ? showAccount(account) : show(signedOut);
+    } catch (caught) {
+      show(signedOut);
+      showError(caught instanceof Error ? caught.message : "Unable to check your sign-in.");
+    }
+  }
+
+  void initialize();
+</script>
