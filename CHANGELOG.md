@@ -1,3 +1,7 @@
+## Production Polish
+
+Removed the local-recovery controls and visible cloud-status banner. Cloud synchronization diagnostics now go to the browser console while confirmed-cloud caching and save protection remain active.
+
 ## Supabase Sprint S9
 
 Completed the authenticated-family cloud cutover with automatic repository selection, signed-out demo mode, local recovery rollback, explicit retry controls, network-failure tests, production build configuration, and deployment/recovery documentation.

@@ -23,13 +23,11 @@ const { profile } = Astro.props;
 <script>
   import { loadParentAccount } from "../lib/auth";
   import {
-    hasTemporaryProfileUnlock,
     isProfileUnlocked,
     loadProfileLockState,
     type ProfileSlug,
   } from "../lib/profileLock";
   import { getSupabaseClient } from "../lib/supabase";
-  import { getStorageMode } from "../lib/storageMode";
 
   const guard = document.querySelector<HTMLElement>("#profile-guard");
 
@@ -39,14 +37,6 @@ const { profile } = Astro.props;
     const profile = guard.dataset.profile as ProfileSlug;
     const baseUrl = guard.dataset.baseUrl ?? "/";
     const client = getSupabaseClient();
-
-    if (
-      getStorageMode() === "local-recovery"
-      && hasTemporaryProfileUnlock(profile)
-    ) {
-      guard.remove();
-      return;
-    }
 
     if (!client) {
       guard.remove();

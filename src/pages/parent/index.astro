@@ -2,7 +2,6 @@
 import Layout from "../../layouts/Layout.astro";
 import AuthPanel from "../../components/parent/AuthPanel.astro";
 import ProfileControls from "../../components/ProfileControls.astro";
-import RecoverySettings from "../../components/parent/RecoverySettings.astro";
 import { kids as demoKids } from "../../data/demo";
 
 const demoJson = JSON.stringify(demoKids);
@@ -30,19 +29,8 @@ const demoJson = JSON.stringify(demoKids);
         </h1>
       </div>
 
-      <div class="flex flex-col items-end gap-2">
-        <ProfileControls profile="parent" />
-        <button
-          id="reset-button"
-          type="button"
-          class="rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
-        >
-          Reset demo
-        </button>
-      </div>
+      <ProfileControls profile="parent" />
     </header>
-
-    <RecoverySettings />
 
     <section aria-labelledby="overview-heading">
       <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">
@@ -436,7 +424,6 @@ const demoJson = JSON.stringify(demoKids);
       loadState,
       payAllowance,
       resolvePurchaseRequest,
-      resetState,
       saveAllowanceSplit,
       saveState,
       setBucketBalances,
@@ -537,11 +524,6 @@ const demoJson = JSON.stringify(demoKids);
     const closeAllowanceDialog =
       document.querySelector(
         "#close-allowance-dialog",
-      );
-
-    const resetButton =
-      document.querySelector(
-        "#reset-button",
       );
 
     const currentSplitSummary =
@@ -1429,33 +1411,6 @@ const demoJson = JSON.stringify(demoKids);
               "hidden",
             );
           }
-        }
-      },
-    );
-
-    resetButton?.addEventListener(
-      "click",
-      async () => {
-        const confirmed =
-          window.confirm(
-            "Reset all browser data back to the original demo balances?",
-          );
-
-        if (!confirmed) {
-          return;
-        }
-
-        try {
-          await resetState();
-          state = await loadState(demoKids);
-          render();
-          showToast("Demo data reset.");
-        } catch (error) {
-          window.alert(
-            error instanceof Error
-              ? error.message
-              : "Unable to reset the demo data.",
-          );
         }
       },
     );

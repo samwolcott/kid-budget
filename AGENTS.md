@@ -25,7 +25,7 @@ If a feature removes thinking from the child, it probably doesn't belong.
 - TypeScript
 - Tailwind
 - Supabase persistence
-- LocalStorage demo and recovery cache
+- LocalStorage demo and confirmed-cloud cache
 - GitHub Pages deployment
 
 Do not introduce React, Vue, or other frameworks.

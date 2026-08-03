@@ -1,0 +1,34 @@
+<script>
+  import { getStorageStatus, type StorageStatus } from "../lib/storageMode";
+
+  function handleStatus(status: StorageStatus): void {
+    const log = ["offline", "conflict"].includes(status.kind)
+      ? console.warn
+      : console.info;
+    log(`[Family Bank: ${status.kind}] ${status.message}`);
+
+    const saving = status.kind === "saving";
+    document.querySelectorAll<HTMLButtonElement>(
+      saving ? "button:not(:disabled)" : "[data-cloud-save-disabled]",
+    ).forEach((button) => {
+      button.disabled = saving;
+      if (saving) button.dataset.cloudSaveDisabled = "true";
+      else delete button.dataset.cloudSaveDisabled;
+    });
+  }
+
+  handleStatus(getStorageStatus());
+  window.addEventListener("family-bank-storage-status", (event) => {
+    handleStatus((event as CustomEvent<StorageStatus>).detail);
+  });
+
+  function blockWhileSaving(event: Event): void {
+    if (getStorageStatus().kind !== "saving") return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    console.info("[Family Bank] Waiting for the current cloud save to finish.");
+  }
+
+  document.addEventListener("click", blockWhileSaving, true);
+  document.addEventListener("submit", blockWhileSaving, true);
+</script>

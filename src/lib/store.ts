@@ -20,10 +20,7 @@ import {
   saveCloudState,
   type CloudSnapshot,
 } from "./cloudStorage";
-import {
-  getStorageMode,
-  setStorageStatus,
-} from "./storageMode";
+import { setStorageStatus } from "./storageMode";
 import { getSupabaseClient } from "./supabase";
 import { runConfirmedSave } from "./cloudSaveCoordinator";
 
@@ -61,15 +58,6 @@ export async function loadState(
 ): Promise<FamilyBankState> {
   cloudSnapshot = null;
   pendingAllowanceSplit = null;
-
-  if (getStorageMode() === "local-recovery") {
-    activeRepository = "local";
-    setStorageStatus({
-      kind: "recovery",
-      message: "Local recovery mode is active on this device.",
-    });
-    return stateRepository.load(fallbackKids);
-  }
 
   const client = getSupabaseClient();
   if (!client) {
@@ -134,7 +122,7 @@ export async function loadState(
       activeRepository = "local";
       setStorageStatus({
         kind: "offline",
-        message: "Cloud is unavailable and has no cache. Local recovery data is shown.",
+        message: "Cloud is unavailable and has no cache. Local demo data is shown.",
       });
       return stateRepository.load(fallbackKids);
     }
@@ -142,7 +130,7 @@ export async function loadState(
     activeRepository = "local";
     setStorageStatus({
       kind: "offline",
-      message: "Parent session could not be restored. Local recovery data is shown.",
+      message: "Parent session could not be restored. Local demo data is shown.",
     });
     return stateRepository.load(fallbackKids);
   }
@@ -231,13 +219,6 @@ export async function saveState(
     }
   }
   await stateRepository.save(state);
-}
-
-export async function resetState(): Promise<void> {
-  if (activeRepository === "cloud") {
-    throw new Error("Cloud reset is not available yet. Switch to Local Data first.");
-  }
-  await stateRepository.reset();
 }
 
 export async function loadAllowanceSplit(

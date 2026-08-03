@@ -70,6 +70,4 @@ Signing in creates or restores the parent's shared family account. Every budgeti
 
 After signing in, the home page asks the parent to create separate four-digit PINs for Parent, Judah, and Max. PIN verifiers are stored in Supabase; only a temporary profile unlock is stored in browser session storage. A kid device can optionally remember Judah or Max and open directly to that child's PIN screen.
 
-If a write fails, do not repeat several actions: use **Reload & Retry** and submit the intended change again after the latest family state loads. A stale device is never allowed to overwrite a newer revision.
-
-The Parent Dashboard offers **Use Local Recovery** for temporary rollback on one device. Recovery-mode changes do not sync. Select **Return to Cloud** to resume the shared account. The last confirmed cloud cache is kept under `family-bank-cloud-cache-v1`; never edit it manually.
+If a write fails, reload the page and submit the intended change again after the latest family state loads. A stale device is never allowed to overwrite a newer revision. Storage and synchronization details are written to the browser console for troubleshooting. The last confirmed cloud cache is kept under `family-bank-cloud-cache-v1`; never edit it manually.
