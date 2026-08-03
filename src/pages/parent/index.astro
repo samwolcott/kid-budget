@@ -421,17 +421,18 @@ const demoJson = JSON.stringify(demoKids);
     } from "../../types";
 
     import {
+      createFallbackState,
+      loadAllowanceSplit,
       loadState,
       payAllowance,
+      resolvePurchaseRequest,
       resetState,
+      saveAllowanceSplit,
       saveState,
       setBucketBalances,
       type AllowancePayment,
       type AllowanceSplit,
     } from "../../lib/store";
-
-    const SPLIT_STORAGE_KEY =
-      "family-bank-allowance-split-v1";
 
     const defaultSplit: AllowanceSplit = {
       spending: 70,
@@ -448,7 +449,27 @@ const demoJson = JSON.stringify(demoKids);
         ) as Record<string, Kid>
       : {};
 
-    let state = loadState(demoKids);
+    let state = createFallbackState(demoKids);
+    let savedSplit = defaultSplit;
+    let loadErrorMessage = "";
+
+    try {
+      state = await loadState(demoKids);
+    } catch (error) {
+      loadErrorMessage = error instanceof Error
+        ? error.message
+        : "Unable to load saved family data.";
+    }
+
+    try {
+      savedSplit = await loadAllowanceSplit(defaultSplit);
+    } catch (error) {
+      if (!loadErrorMessage) {
+        loadErrorMessage = error instanceof Error
+          ? error.message
+          : "Unable to load the saved allowance split.";
+      }
+    }
 
     const money = new Intl.NumberFormat(
       "en-US",
@@ -590,38 +611,6 @@ const demoJson = JSON.stringify(demoKids);
         },
         2600,
       );
-    }
-
-    function loadSavedSplit(): AllowanceSplit {
-      try {
-        const raw =
-          localStorage.getItem(
-            SPLIT_STORAGE_KEY,
-          );
-
-        if (!raw) {
-          return defaultSplit;
-        }
-
-        const parsed =
-          JSON.parse(raw) as AllowanceSplit;
-
-        const total =
-          parsed.spending +
-          parsed.saving +
-          parsed.giving;
-
-        if (
-          !Number.isFinite(total) ||
-          Math.abs(total - 100) > 0.001
-        ) {
-          return defaultSplit;
-        }
-
-        return parsed;
-      } catch {
-        return defaultSplit;
-      }
     }
 
     function getSplit(): AllowanceSplit {
@@ -1247,26 +1236,23 @@ const demoJson = JSON.stringify(demoKids);
           "[data-decline]",
         )
         .forEach((button) => {
-          button.onclick = () => {
-            const request =
-              state.purchaseRequests.find(
-                (item) =>
-                  item.id ===
-                  button.dataset.decline,
+          button.onclick = async () => {
+            try {
+              resolvePurchaseRequest(
+                state,
+                button.dataset.decline ?? "",
+                "declined",
               );
-
-            if (!request) {
-              return;
+              await saveState(state);
+              render();
+              showToast("Purchase declined.");
+            } catch (error) {
+              window.alert(
+                error instanceof Error
+                  ? error.message
+                  : "Unable to decline the purchase.",
+              );
             }
-
-            request.status = "declined";
-
-            saveState(state);
-            render();
-
-            showToast(
-              "Purchase declined.",
-            );
           };
         });
 
@@ -1275,71 +1261,23 @@ const demoJson = JSON.stringify(demoKids);
           "[data-approve]",
         )
         .forEach((button) => {
-          button.onclick = () => {
-            const request =
-              state.purchaseRequests.find(
-                (item) =>
-                  item.id ===
-                  button.dataset.approve,
+          button.onclick = async () => {
+            try {
+              resolvePurchaseRequest(
+                state,
+                button.dataset.approve ?? "",
+                "approved",
               );
-
-            if (!request) {
-              return;
-            }
-
-            const kid =
-              Object.values(
-                state.kids,
-              ).find(
-                (item) =>
-                  item.id ===
-                  request.kidId,
-              );
-
-            if (
-              !kid ||
-              kid.buckets[
-                request.bucket
-              ] < request.amount
-            ) {
+              await saveState(state);
+              render();
+              showToast("Purchase approved!");
+            } catch (error) {
               window.alert(
-                "That bucket no longer has enough money.",
+                error instanceof Error
+                  ? error.message
+                  : "Unable to approve the purchase.",
               );
-
-              return;
             }
-
-            kid.buckets[
-              request.bucket
-            ] = roundCurrency(
-              kid.buckets[
-                request.bucket
-              ] -
-                request.amount,
-            );
-
-            kid.transactions.unshift({
-              id: crypto.randomUUID(),
-              date: new Date()
-                .toISOString()
-                .slice(0, 10),
-              description:
-                request.description,
-              amount:
-                -request.amount,
-              bucket:
-                request.bucket,
-              type: "purchase",
-            });
-
-            request.status = "approved";
-
-            saveState(state);
-            render();
-
-            showToast(
-              "Purchase approved!",
-            );
           };
         });
     }
@@ -1357,7 +1295,7 @@ const demoJson = JSON.stringify(demoKids);
       }
     });
 
-    balanceForm?.addEventListener("submit", (event) => {
+    balanceForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
 
       if (!(balanceForm instanceof HTMLFormElement)) return;
@@ -1371,7 +1309,7 @@ const demoJson = JSON.stringify(demoKids);
           saving: Number(data.get("saving")),
           giving: Number(data.get("giving")),
         });
-        saveState(state);
+        await saveState(state);
         render();
 
         if (balanceDialog instanceof HTMLDialogElement) {
@@ -1393,7 +1331,7 @@ const demoJson = JSON.stringify(demoKids);
       "click",
       () => {
         renderAllowanceKids();
-        setSplit(loadSavedSplit());
+        setSplit(savedSplit);
 
         if (
           allowanceError instanceof HTMLElement
@@ -1437,7 +1375,7 @@ const demoJson = JSON.stringify(demoKids);
 
     allowanceForm?.addEventListener(
       "submit",
-      (event) => {
+      async (event) => {
         event.preventDefault();
 
         const payments =
@@ -1453,12 +1391,9 @@ const demoJson = JSON.stringify(demoKids);
             split,
           );
 
-          saveState(state);
-
-          localStorage.setItem(
-            SPLIT_STORAGE_KEY,
-            JSON.stringify(split),
-          );
+          await saveAllowanceSplit(split);
+          await saveState(state);
+          savedSplit = split;
 
           render();
 
@@ -1490,7 +1425,7 @@ const demoJson = JSON.stringify(demoKids);
 
     resetButton?.addEventListener(
       "click",
-      () => {
+      async () => {
         const confirmed =
           window.confirm(
             "Reset all browser data back to the original demo balances?",
@@ -1500,18 +1435,24 @@ const demoJson = JSON.stringify(demoKids);
           return;
         }
 
-        resetState();
-        state = loadState(demoKids);
-        render();
-
-        showToast(
-          "Demo data reset.",
-        );
+        try {
+          await resetState();
+          state = await loadState(demoKids);
+          render();
+          showToast("Demo data reset.");
+        } catch (error) {
+          window.alert(
+            error instanceof Error
+              ? error.message
+              : "Unable to reset the demo data.",
+          );
+        }
       },
     );
 
-    setSplit(loadSavedSplit());
+    setSplit(savedSplit);
     updateAllowanceEditor();
     render();
+    if (loadErrorMessage) showToast(loadErrorMessage);
   </script>
 </Layout>

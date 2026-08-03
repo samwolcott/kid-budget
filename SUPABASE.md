@@ -144,12 +144,12 @@ Implement exactly one unchecked sprint at a time. Every sprint must leave the ap
 
 ### Sprint S1 — Async Storage Boundary
 
-- [ ] Introduce a small asynchronous storage repository contract.
-- [ ] Implement the contract with LocalStorage only.
-- [ ] Keep existing LocalStorage keys and data compatible.
-- [ ] Move direct page-level financial mutations behind the domain/storage boundary.
-- [ ] Add clear load and save error handling.
-- [ ] Preserve all existing behavior and UI.
+- [x] Introduce a small asynchronous storage repository contract.
+- [x] Implement the contract with LocalStorage only.
+- [x] Keep existing LocalStorage keys and data compatible.
+- [x] Move direct page-level financial mutations behind the domain/storage boundary.
+- [x] Add clear load and save error handling.
+- [x] Preserve all existing behavior and UI.
 
 Acceptance criteria:
 
@@ -291,4 +291,3 @@ Acceptance criteria:
 - Grandparent access
 - Database-enforced child device identities
 - Expanded audit and reporting tools
-

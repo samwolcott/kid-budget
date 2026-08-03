@@ -1,3 +1,7 @@
+## Supabase Sprint S1
+
+Added an asynchronous LocalStorage repository boundary and centralized purchase request resolution without changing application behavior.
+
 ## Sprint 16
 
 Added a reduced-motion-friendly confetti celebration for funding and purchasing savings goals.

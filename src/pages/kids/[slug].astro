@@ -520,6 +520,7 @@ const demoJson = JSON.stringify(demoKids);
     import {
       allocateToGoal,
       completeGoalPurchase,
+      createFallbackState,
       createGoal,
       createPurchaseRequest,
       deleteGoal,
@@ -1695,7 +1696,7 @@ const demoJson = JSON.stringify(demoKids);
 
     moveFrom?.addEventListener("change", updateMoveBalanceHelp);
 
-    moveForm?.addEventListener("submit", (event) => {
+    moveForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!(moveForm instanceof HTMLFormElement) || !currentState || !currentKid) return;
 
@@ -1709,7 +1710,7 @@ const demoJson = JSON.stringify(demoKids);
           data.get("to") as BucketType,
           Number(data.get("amount")),
         );
-        saveState(currentState);
+        await saveState(currentState);
         currentKid = currentState.kids[currentKid.slug];
         renderDashboard(currentKid);
         moveDialog instanceof HTMLDialogElement && moveDialog.close();
@@ -1724,7 +1725,7 @@ const demoJson = JSON.stringify(demoKids);
 
     purchaseForm?.addEventListener(
       "submit",
-      (event) => {
+      async (event) => {
         event.preventDefault();
 
         if (
@@ -1751,7 +1752,7 @@ const demoJson = JSON.stringify(demoKids);
             bucket,
           );
 
-          saveState(currentState);
+          await saveState(currentState);
           purchaseForm.reset();
 
           if (purchaseDialog instanceof HTMLDialogElement) {
@@ -1784,7 +1785,7 @@ const demoJson = JSON.stringify(demoKids);
     editGoalName?.addEventListener("input", updateEditGoalButton);
     editGoalTarget?.addEventListener("input", updateEditGoalButton);
 
-    editGoalForm?.addEventListener("submit", (event) => {
+    editGoalForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!(editGoalForm instanceof HTMLFormElement) || !currentState || !currentKid) return;
       const data = new FormData(editGoalForm);
@@ -1798,7 +1799,7 @@ const demoJson = JSON.stringify(demoKids);
           Number(data.get("target")),
           String(data.get("emoji") ?? "🎯"),
         );
-        saveState(currentState);
+        await saveState(currentState);
         currentKid = currentState.kids[currentKid.slug];
         renderDashboard(currentKid);
         editGoalDialog instanceof HTMLDialogElement && editGoalDialog.close();
@@ -1827,7 +1828,7 @@ const demoJson = JSON.stringify(demoKids);
       if (allocateGoalDialog instanceof HTMLDialogElement && event.target === allocateGoalDialog) allocateGoalDialog.close();
     });
 
-    newGoalForm?.addEventListener("submit", (event) => {
+    newGoalForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!(newGoalForm instanceof HTMLFormElement) || !currentState || !currentKid) return;
       const data = new FormData(newGoalForm);
@@ -1839,7 +1840,7 @@ const demoJson = JSON.stringify(demoKids);
           Number(data.get("target")),
           String(data.get("emoji") ?? "🎯"),
         );
-        saveState(currentState);
+        await saveState(currentState);
         currentKid = currentState.kids[currentKid.slug];
         renderDashboard(currentKid);
         newGoalDialog instanceof HTMLDialogElement && newGoalDialog.close();
@@ -1852,7 +1853,7 @@ const demoJson = JSON.stringify(demoKids);
       }
     });
 
-    allocateGoalForm?.addEventListener("submit", (event) => {
+    allocateGoalForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!(allocateGoalForm instanceof HTMLFormElement) || !currentState || !currentKid) return;
       const data = new FormData(allocateGoalForm);
@@ -1864,7 +1865,7 @@ const demoJson = JSON.stringify(demoKids);
           goalId,
           Number(data.get("amount")),
         );
-        saveState(currentState);
+        await saveState(currentState);
         currentKid = currentState.kids[currentKid.slug];
         const completed = currentKid.goals.some(
           (goal) => goal.id === goalId && goal.saved >= goal.target,
@@ -1908,7 +1909,7 @@ const demoJson = JSON.stringify(demoKids);
       if (completeGoalDialog instanceof HTMLDialogElement && event.target === completeGoalDialog) completeGoalDialog.close();
     });
 
-    removeGoalForm?.addEventListener("submit", (event) => {
+    removeGoalForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!(removeGoalForm instanceof HTMLFormElement) || !currentState || !currentKid) return;
       const data = new FormData(removeGoalForm);
@@ -1919,7 +1920,7 @@ const demoJson = JSON.stringify(demoKids);
           String(data.get("goalId") ?? ""),
           Number(data.get("amount")),
         );
-        saveState(currentState);
+        await saveState(currentState);
         currentKid = currentState.kids[currentKid.slug];
         renderDashboard(currentKid);
         removeGoalDialog instanceof HTMLDialogElement && removeGoalDialog.close();
@@ -1932,11 +1933,11 @@ const demoJson = JSON.stringify(demoKids);
       }
     });
 
-    confirmDeleteGoal?.addEventListener("click", () => {
+    confirmDeleteGoal?.addEventListener("click", async () => {
       if (!currentState || !currentKid || !selectedGoalId) return;
       try {
         deleteGoal(currentState, currentKid.slug, selectedGoalId);
-        saveState(currentState);
+        await saveState(currentState);
         currentKid = currentState.kids[currentKid.slug];
         renderDashboard(currentKid);
         deleteGoalDialog instanceof HTMLDialogElement && deleteGoalDialog.close();
@@ -1946,11 +1947,11 @@ const demoJson = JSON.stringify(demoKids);
       }
     });
 
-    confirmCompleteGoal?.addEventListener("click", () => {
+    confirmCompleteGoal?.addEventListener("click", async () => {
       if (!currentState || !currentKid || !selectedGoalId) return;
       try {
         completeGoalPurchase(currentState, currentKid.slug, selectedGoalId);
-        saveState(currentState);
+        await saveState(currentState);
         currentKid = currentState.kids[currentKid.slug];
         renderDashboard(currentKid);
         completeGoalDialog instanceof HTMLDialogElement && completeGoalDialog.close();
@@ -1975,8 +1976,18 @@ const demoJson = JSON.stringify(demoKids);
         demoElement.textContent || "{}",
       ) as Record<string, Kid>;
 
-      const state: FamilyBankState =
-        loadState(demoKids);
+      let state: FamilyBankState =
+        createFallbackState(demoKids);
+
+      try {
+        state = await loadState(demoKids);
+      } catch (error) {
+        showToast(
+          error instanceof Error
+            ? error.message
+            : "Unable to load saved family data.",
+        );
+      }
 
       const savedKid = state.kids[slug];
 

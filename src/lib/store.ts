@@ -1,18 +1,19 @@
 import type {
+  AllowanceSplit,
   BucketType,
   BucketBalances,
   FamilyBankState,
   Kid,
   PurchaseRequest,
 } from "../types";
+import {
+  createFallbackState,
+  LocalStorageStateRepository,
+} from "./storage";
 
-const STORAGE_KEY = "family-bank-state-v1";
+const stateRepository = new LocalStorageStateRepository();
 
-export interface AllowanceSplit {
-  spending: number;
-  saving: number;
-  giving: number;
-}
+export type { AllowanceSplit } from "../types";
 
 export interface AllowancePayment {
   slug: string;
@@ -27,53 +28,35 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function loadState(
+export async function loadState(
   fallbackKids: Record<string, Kid>,
-): FamilyBankState {
-  const fallback: FamilyBankState = {
-    kids: structuredClone(fallbackKids),
-    purchaseRequests: [],
-  };
-
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-
-    if (!raw) {
-      return fallback;
-    }
-
-    const parsed = JSON.parse(raw) as FamilyBankState;
-
-    if (!parsed?.kids || !parsed?.purchaseRequests) {
-      return fallback;
-    }
-
-    Object.entries(parsed.kids).forEach(([slug, kid]) => {
-      const configuredKid = fallbackKids[slug];
-
-      if (configuredKid) {
-        kid.allowanceAmount = configuredKid.allowanceAmount;
-      }
-    });
-
-    return parsed;
-  } catch {
-    return fallback;
-  }
+): Promise<FamilyBankState> {
+  return stateRepository.load(fallbackKids);
 }
 
-export function saveState(
+export async function saveState(
   state: FamilyBankState,
-): void {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(state),
-  );
+): Promise<void> {
+  await stateRepository.save(state);
 }
 
-export function resetState(): void {
-  localStorage.removeItem(STORAGE_KEY);
+export async function resetState(): Promise<void> {
+  await stateRepository.reset();
 }
+
+export async function loadAllowanceSplit(
+  fallback: AllowanceSplit,
+): Promise<AllowanceSplit> {
+  return stateRepository.loadAllowanceSplit(fallback);
+}
+
+export async function saveAllowanceSplit(
+  split: AllowanceSplit,
+): Promise<void> {
+  await stateRepository.saveAllowanceSplit(split);
+}
+
+export { createFallbackState };
 
 export function setBucketBalances(
   state: FamilyBankState,
@@ -352,6 +335,58 @@ export function createPurchaseRequest(
   state.purchaseRequests.unshift(request);
 
   return request;
+}
+
+export function resolvePurchaseRequest(
+  state: FamilyBankState,
+  requestId: string,
+  resolution: "approved" | "declined",
+): void {
+  const request = state.purchaseRequests.find(
+    (item) => item.id === requestId,
+  );
+
+  if (!request) {
+    throw new Error("Purchase request not found.");
+  }
+
+  if (request.status !== "pending") {
+    throw new Error("That purchase request was already resolved.");
+  }
+
+  if (resolution === "declined") {
+    request.status = "declined";
+    return;
+  }
+
+  const kid = Object.values(state.kids).find(
+    (item) => item.id === request.kidId,
+  );
+
+  if (!kid) {
+    throw new Error("Kid account not found.");
+  }
+
+  if (kid.buckets[request.bucket] < request.amount) {
+    throw new Error(
+      "That bucket no longer has enough money.",
+    );
+  }
+
+  kid.buckets[request.bucket] = roundCurrency(
+    kid.buckets[request.bucket] - request.amount,
+  );
+
+  kid.transactions.unshift({
+    id: crypto.randomUUID(),
+    date: today(),
+    description: request.description,
+    amount: -request.amount,
+    bucket: request.bucket,
+    type: "purchase",
+  });
+
+  request.status = "approved";
 }
 
 export function createGoal(
