@@ -42,9 +42,9 @@ All commands are run from the root of the project, from a terminal:
 
 Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
 
-## Supabase foundation
+## Supabase setup
 
-The application remains LocalStorage-backed while the Supabase migration is in progress. Supabase configuration is optional until cloud reads are enabled.
+Supabase is the default data source for authenticated families. Signed-out and unconfigured browsers continue to use the separate LocalStorage demo.
 
 To prepare a local environment, copy `.env.example` to `.env` and provide only:
 
@@ -53,7 +53,9 @@ PUBLIC_SUPABASE_URL=
 PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```
 
-Both browser-safe values are available from the Supabase project Connect dialog. Never place a database password or service-role key in a `PUBLIC_*` variable or commit it to the repository.
+Both browser-safe values are available from the Supabase project Connect dialog. Never place a database password, secret key, or service-role key in a `PUBLIC_*` variable or commit it to the repository.
+
+For GitHub Pages, add both names as repository **Variables** under **Settings → Secrets and variables → Actions → Variables**. The deployment workflow passes those public values to the Astro build.
 
 Database changes live in `supabase/migrations/`. Apply them through the connected Supabase GitHub deployment or the Supabase CLI; do not recreate the schema manually in the dashboard.
 
@@ -64,8 +66,10 @@ http://localhost:4321/parent/
 https://samwolcott.github.io/kid-budget/parent/
 ```
 
-Signing in creates or restores the parent's family account, but budgeting data remains in LocalStorage until a later migration sprint.
+Signing in creates or restores the parent's shared family account. Every budgeting change is saved atomically with a revision check, confirmed from Supabase, and cached locally.
 
 After signing in, the home page asks the parent to create separate four-digit PINs for Parent, Judah, and Max. PIN verifiers are stored in Supabase; only a temporary profile unlock is stored in browser session storage. A kid device can optionally remember Judah or Max and open directly to that child's PIN screen.
 
-The parent dashboard can opt into shared cloud data. Every budgeting change is saved atomically with a revision check, confirmed from Supabase, and cached separately. Failed writes stay visibly unconfirmed, stale devices must reload, and the original LocalStorage budget remains separate and untouched.
+If a write fails, do not repeat several actions: use **Reload & Retry** and submit the intended change again after the latest family state loads. A stale device is never allowed to overwrite a newer revision.
+
+The Parent Dashboard offers **Use Local Recovery** for temporary rollback on one device. Recovery-mode changes do not sync. Select **Return to Cloud** to resume the shared account. The last confirmed cloud cache is kept under `family-bank-cloud-cache-v1`; never edit it manually.

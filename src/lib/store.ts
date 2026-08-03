@@ -25,11 +25,13 @@ import {
   setStorageStatus,
 } from "./storageMode";
 import { getSupabaseClient } from "./supabase";
+import { runConfirmedSave } from "./cloudSaveCoordinator";
 
 const stateRepository = new LocalStorageStateRepository();
 let cloudSnapshot: CloudSnapshot | null = null;
 let pendingAllowanceSplit: AllowanceSplit | null = null;
 let cloudSavePending = false;
+let activeRepository: "local" | "cloud" = "local";
 
 function replaceState(
   target: FamilyBankState,
@@ -57,91 +59,99 @@ function today(): string {
 export async function loadState(
   fallbackKids: Record<string, Kid>,
 ): Promise<FamilyBankState> {
-  if (getStorageMode() === "cloud") {
-    setStorageStatus({
-      kind: "loading",
-      message: "Loading shared cloud data…",
-    });
-
-    const client = getSupabaseClient();
-    if (!client) {
-      setStorageStatus({
-        kind: "offline",
-        message: "Supabase is not configured. Showing local data instead.",
-      });
-      return stateRepository.load(fallbackKids);
-    }
-
-    try {
-      const account = await loadParentAccount(client);
-      if (!account) {
-        setStorageStatus({
-          kind: "offline",
-          message: "Parent sign-in is required. Showing local data instead.",
-        });
-        return stateRepository.load(fallbackKids);
-      }
-
-      try {
-        cloudSnapshot = await fetchCloudSnapshot(
-          client,
-          account.family.id,
-          fallbackKids,
-        );
-
-        try {
-          saveCloudCache(cloudSnapshot);
-        } catch {
-          // A cache failure does not invalidate a successful cloud read.
-        }
-
-        const empty = isEmptyCloudState(cloudSnapshot.state);
-        setStorageStatus({
-          kind: empty ? "empty" : "cloud",
-          message: empty
-            ? "Cloud data is ready and currently empty."
-            : "Shared cloud data is active.",
-        });
-        return structuredClone(cloudSnapshot.state);
-      } catch {
-        cloudSnapshot = loadCloudCache(account.family.id);
-
-        if (cloudSnapshot) {
-          setStorageStatus({
-            kind: "cached",
-            message: "Cloud is unavailable. Showing the last confirmed cloud cache.",
-          });
-          return structuredClone(cloudSnapshot.state);
-        }
-
-        setStorageStatus({
-          kind: "offline",
-          message: "Cloud is unavailable and has no cache. Showing local data instead.",
-        });
-        return stateRepository.load(fallbackKids);
-      }
-    } catch {
-      setStorageStatus({
-        kind: "offline",
-        message: "Parent session could not be restored. Showing local data instead.",
-      });
-      return stateRepository.load(fallbackKids);
-    }
-  }
-
   cloudSnapshot = null;
   pendingAllowanceSplit = null;
+
+  if (getStorageMode() === "local-recovery") {
+    activeRepository = "local";
+    setStorageStatus({
+      kind: "recovery",
+      message: "Local recovery mode is active on this device.",
+    });
+    return stateRepository.load(fallbackKids);
+  }
+
+  const client = getSupabaseClient();
+  if (!client) {
+    activeRepository = "local";
+    setStorageStatus({
+      kind: "local",
+      message: "Local demo mode is active.",
+    });
+    return stateRepository.load(fallbackKids);
+  }
+
   setStorageStatus({
-    kind: "local",
-    message: "LocalStorage is active.",
+    kind: "loading",
+    message: "Loading shared cloud data…",
   });
-  return stateRepository.load(fallbackKids);
+
+  try {
+    const account = await loadParentAccount(client);
+    if (!account) {
+      activeRepository = "local";
+      setStorageStatus({
+        kind: "local",
+        message: "Signed-out local demo mode is active.",
+      });
+      return stateRepository.load(fallbackKids);
+    }
+
+    activeRepository = "cloud";
+
+    try {
+      cloudSnapshot = await fetchCloudSnapshot(
+        client,
+        account.family.id,
+        fallbackKids,
+      );
+
+      try {
+        saveCloudCache(cloudSnapshot);
+      } catch {
+        // A cache failure does not invalidate a successful cloud read.
+      }
+
+      const empty = isEmptyCloudState(cloudSnapshot.state);
+      setStorageStatus({
+        kind: empty ? "empty" : "cloud",
+        message: empty
+          ? "Cloud data is active and currently empty."
+          : "Shared cloud data is active.",
+      });
+      return structuredClone(cloudSnapshot.state);
+    } catch {
+      cloudSnapshot = loadCloudCache(account.family.id);
+
+      if (cloudSnapshot) {
+        setStorageStatus({
+          kind: "cached",
+          message: "Cloud is unavailable. Showing the last confirmed cloud cache.",
+        });
+        return structuredClone(cloudSnapshot.state);
+      }
+
+      activeRepository = "local";
+      setStorageStatus({
+        kind: "offline",
+        message: "Cloud is unavailable and has no cache. Local recovery data is shown.",
+      });
+      return stateRepository.load(fallbackKids);
+    }
+  } catch {
+    activeRepository = "local";
+    setStorageStatus({
+      kind: "offline",
+      message: "Parent session could not be restored. Local recovery data is shown.",
+    });
+    return stateRepository.load(fallbackKids);
+  }
 }
 
 export async function saveState(
   state: FamilyBankState,
 ): Promise<void> {
-  if (getStorageMode() === "cloud") {
+  if (activeRepository === "cloud") {
     if (cloudSavePending) {
       throw new Error("A cloud save is already in progress.");
     }
@@ -167,16 +177,21 @@ export async function saveState(
         throw new Error("The parent session changed. Reload before trying again.");
       }
 
-      await saveCloudState(client, confirmedSnapshot, state, split);
-      const confirmed = await fetchCloudSnapshot(
-        client,
-        confirmedSnapshot.familyId,
-        confirmedSnapshot.state.kids,
-      );
+      const confirmed = await runConfirmedSave({
+        target: state,
+        confirmedState: confirmedSnapshot.state,
+        write: () => saveCloudState(client, confirmedSnapshot, state, split),
+        readConfirmed: () => fetchCloudSnapshot(
+          client,
+          confirmedSnapshot.familyId,
+          confirmedSnapshot.state.kids,
+        ),
+        stateFromResult: (result) => result.state,
+        replace: replaceState,
+      });
 
       cloudSnapshot = confirmed;
       pendingAllowanceSplit = null;
-      replaceState(state, confirmed.state);
 
       try {
         saveCloudCache(confirmed);
@@ -219,7 +234,7 @@ export async function saveState(
 }
 
 export async function resetState(): Promise<void> {
-  if (getStorageMode() === "cloud") {
+  if (activeRepository === "cloud") {
     throw new Error("Cloud reset is not available yet. Switch to Local Data first.");
   }
   await stateRepository.reset();
@@ -228,7 +243,7 @@ export async function resetState(): Promise<void> {
 export async function loadAllowanceSplit(
   fallback: AllowanceSplit,
 ): Promise<AllowanceSplit> {
-  if (getStorageMode() === "cloud") {
+  if (activeRepository === "cloud") {
     return cloudSnapshot?.allowanceSplit
       ?? fallback;
   }
@@ -238,7 +253,7 @@ export async function loadAllowanceSplit(
 export async function saveAllowanceSplit(
   split: AllowanceSplit,
 ): Promise<void> {
-  if (getStorageMode() === "cloud") {
+  if (activeRepository === "cloud") {
     pendingAllowanceSplit = structuredClone(split);
     return;
   }

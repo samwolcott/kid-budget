@@ -24,7 +24,8 @@ If a feature removes thinking from the child, it probably doesn't belong.
 - Astro
 - TypeScript
 - Tailwind
-- LocalStorage persistence
+- Supabase persistence
+- LocalStorage demo and recovery cache
 - GitHub Pages deployment
 
 Do not introduce React, Vue, or other frameworks.
@@ -75,7 +76,8 @@ One sprint = one feature.
 - Goal editing
 - Goal completion
 - Bucket transfers
-- Local persistence
+- Shared cloud persistence
+- Signed-out local demo mode
 
 ---
 

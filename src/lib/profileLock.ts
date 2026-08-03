@@ -76,6 +76,10 @@ export function isProfileUnlocked(
   return sessionStorage.getItem(`${UNLOCK_PREFIX}${profile}`) === familyId;
 }
 
+export function hasTemporaryProfileUnlock(profile: ProfileSlug): boolean {
+  return Boolean(sessionStorage.getItem(`${UNLOCK_PREFIX}${profile}`));
+}
+
 export function lockProfile(profile: ProfileSlug): void {
   sessionStorage.removeItem(`${UNLOCK_PREFIX}${profile}`);
 }

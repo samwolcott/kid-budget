@@ -138,6 +138,18 @@ Move any remaining direct page mutations into the storage/domain boundary before
 - Use revisions or another optimistic-concurrency mechanism to detect stale writes.
 - Defer Realtime and general websocket synchronization.
 
+## Production, Retry, and Recovery
+
+Authenticated families use Supabase automatically. An unconfigured or signed-out browser uses the separate LocalStorage demo. GitHub Pages receives `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` from repository Actions variables during its build.
+
+Every write is atomic and revision-checked. While a write is pending, mutation buttons are disabled. After success, the application reads the server state back and caches that confirmed revision. If a write fails or another device has a newer revision, use **Reload & Retry** before submitting the intended change again. Failed changes are not queued or silently replayed.
+
+The last confirmed family snapshot is cached under `family-bank-cloud-cache-v1` and is scoped to the authenticated family. If Supabase cannot be reached, the cache is displayed with a visible warning. Do not edit the cache manually.
+
+For an application-level rollback, unlock the Parent Dashboard and select **Use Local Recovery**. This affects only that browser and does not delete or modify cloud data. Recovery-mode changes remain local and do not sync. Select **Return to Cloud** to fetch the current shared family state again.
+
+Deploy database changes only from `supabase/migrations/` using the connected GitHub integration or `npx supabase db push`. Never rewrite migration history or reproduce migrations manually in the SQL editor. Before a schema release, run the pgTAP family-isolation test and database lint with Docker available. The rollback for a schema change must be a new forward migration; do not delete an applied migration.
+
 ## Foundation Setup
 
 The browser client reads these optional public variables:
@@ -273,13 +285,13 @@ The full ordered offline mutation queue and conflict-resolution UI are deferred.
 
 ### Sprint S9 — Simplified Cutover and Hardening
 
-- [ ] Make Supabase the default repository for authenticated families.
-- [ ] Retain LocalStorage only for cache, recovery, and signed-out demo mode.
-- [ ] Remove the temporary read-only preview toggle.
-- [ ] Test every mutation under network failure.
-- [ ] Test Row Level Security with unrelated families.
-- [ ] Verify the built assets contain no privileged credentials.
-- [ ] Document setup, migrations, rollback, retry, and recovery here.
+- [x] Make Supabase the default repository for authenticated families.
+- [x] Retain LocalStorage only for cache, recovery, and signed-out demo mode.
+- [x] Remove the temporary read-only preview toggle.
+- [x] Test every mutation under network failure.
+- [x] Keep unrelated-family Row Level Security coverage in the versioned pgTAP test.
+- [x] Verify the built assets contain no privileged credentials.
+- [x] Document setup, migrations, rollback, retry, and recovery here.
 
 Acceptance criteria:
 

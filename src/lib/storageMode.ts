@@ -1,7 +1,8 @@
-export type StorageMode = "local" | "cloud";
+export type StorageMode = "automatic" | "local-recovery";
 
 export type StorageStatusKind =
   | "local"
+  | "recovery"
   | "loading"
   | "cloud"
   | "saving"
@@ -23,11 +24,11 @@ let currentStatus: StorageStatus = {
 
 export function getStorageMode(): StorageMode {
   try {
-    return localStorage.getItem(MODE_KEY) === "cloud"
-      ? "cloud"
-      : "local";
+    return localStorage.getItem(MODE_KEY) === "local-recovery"
+      ? "local-recovery"
+      : "automatic";
   } catch {
-    return "local";
+    return "automatic";
   }
 }
 

@@ -1,21 +1,25 @@
 <div id="storage-status-banner" class="sticky top-0 z-[60] hidden border-b border-violet-200 bg-violet-50 px-4 py-3 text-center text-sm font-bold text-violet-900 shadow-sm" role="status" aria-live="polite">
   <span id="storage-status-message">Loading cloud data…</span>
+  <button id="storage-retry-button" type="button" class="ml-2 hidden rounded-lg bg-white px-3 py-1 text-xs font-black text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Reload & Retry</button>
 </div>
 
 <script>
   import {
-    getStorageMode,
     getStorageStatus,
     type StorageStatus,
   } from "../lib/storageMode";
 
   const banner = document.querySelector<HTMLElement>("#storage-status-banner");
   const message = document.querySelector<HTMLElement>("#storage-status-message");
+  const retryButton = document.querySelector<HTMLButtonElement>("#storage-retry-button");
 
   function render(status: StorageStatus): void {
-    const cloud = getStorageMode() === "cloud";
-    banner?.classList.toggle("hidden", !cloud);
+    banner?.classList.toggle("hidden", status.kind === "local");
     if (message) message.textContent = status.message;
+    retryButton?.classList.toggle(
+      "hidden",
+      !["cached", "offline", "conflict"].includes(status.kind),
+    );
 
     if (status.kind === "saving") {
       document.querySelectorAll<HTMLButtonElement>("button:not(:disabled)").forEach((button) => {
@@ -34,9 +38,10 @@
   window.addEventListener("family-bank-storage-status", (event) => {
     render((event as CustomEvent<StorageStatus>).detail);
   });
+  retryButton?.addEventListener("click", () => window.location.reload());
 
   document.addEventListener("click", (event) => {
-    if (getStorageMode() !== "cloud" || getStorageStatus().kind !== "saving") return;
+    if (getStorageStatus().kind !== "saving") return;
     const target = event.target as Element | null;
     const button = target?.closest("button");
     if (!button) return;
@@ -47,7 +52,7 @@
   }, true);
 
   document.addEventListener("submit", (event) => {
-    if (getStorageMode() !== "cloud" || getStorageStatus().kind !== "saving") return;
+    if (getStorageStatus().kind !== "saving") return;
 
     event.preventDefault();
     event.stopImmediatePropagation();

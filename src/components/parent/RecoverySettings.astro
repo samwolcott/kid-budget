@@ -1,0 +1,66 @@
+<section class="mb-8 rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200 sm:p-6" aria-labelledby="recovery-heading">
+  <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+    <div>
+      <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-slate-500">Data recovery</p>
+      <h2 id="recovery-heading" class="mt-1 text-xl font-black text-slate-950">Cloud is the family account</h2>
+      <p id="recovery-description" class="mt-2 text-sm leading-6 text-slate-600">Checking this device…</p>
+    </div>
+    <button id="recovery-toggle" type="button" disabled class="shrink-0 rounded-xl bg-white px-5 py-3 font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-100 disabled:cursor-wait disabled:opacity-50">Checking…</button>
+  </div>
+</section>
+
+<script>
+  import { getStorageMode, setStorageMode } from "../../lib/storageMode";
+  import { getSupabaseClient } from "../../lib/supabase";
+
+  const description = document.querySelector<HTMLElement>("#recovery-description");
+  const toggle = document.querySelector<HTMLButtonElement>("#recovery-toggle");
+
+  function render(): void {
+    const recovery = getStorageMode() === "local-recovery";
+    if (description) {
+      description.textContent = recovery
+        ? "Local recovery mode is active only on this device. Changes here do not sync to the family cloud account."
+        : "Authenticated profiles use Supabase automatically. LocalStorage remains available only for signed-out demo and recovery.";
+    }
+    if (toggle) toggle.textContent = recovery ? "Return to Cloud" : "Use Local Recovery";
+  }
+
+  toggle?.addEventListener("click", () => {
+    const recovery = getStorageMode() === "local-recovery";
+
+    if (!recovery) {
+      const confirmed = window.confirm(
+        "Local recovery mode is separate from the shared family account. Changes made there will not sync. Continue?",
+      );
+      if (!confirmed) return;
+    }
+
+    setStorageMode(recovery ? "automatic" : "local-recovery");
+    window.location.reload();
+  });
+
+  async function initialize(): Promise<void> {
+    render();
+    if (getStorageMode() === "local-recovery") {
+      if (toggle) toggle.disabled = false;
+      return;
+    }
+
+    const client = getSupabaseClient();
+    if (!client) return;
+
+    try {
+      const { data } = await client.auth.getSession();
+      if (data.session && toggle) toggle.disabled = false;
+    } catch (caught) {
+      if (description) {
+        description.textContent = caught instanceof Error
+          ? caught.message
+          : "Recovery controls are unavailable.";
+      }
+    }
+  }
+
+  void initialize();
+</script>
