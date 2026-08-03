@@ -23,6 +23,12 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="manifest" href={`${import.meta.env.BASE_URL}manifest.webmanifest`} />
+    <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.svg`} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={`${import.meta.env.BASE_URL}app-icon-192.png`} />
     <title>{title}</title>
   </head>
 
@@ -30,5 +36,16 @@ const {
     {profile && <StorageStatusMonitor />}
     <slot />
     {profile && <ProfileGuard profile={profile} />}
+
+    <script>
+      if ("serviceWorker" in navigator && import.meta.env.PROD) {
+        window.addEventListener("load", () => {
+          const url = `${import.meta.env.BASE_URL}sw.js`;
+          navigator.serviceWorker.register(url).catch((error) => {
+            console.warn("[Family Bank] Service worker registration failed.", error);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

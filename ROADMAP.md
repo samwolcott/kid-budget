@@ -24,7 +24,7 @@
   - [x] Read-only cloud repository and cache
   - [x] Cloud mutation path
   - [x] Cutover and hardening
-- [ ] PWA (optional home-screen installation)
+- [x] PWA (optional home-screen installation)
 
 ## Someday
 

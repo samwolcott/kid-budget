@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="The Family Bank">
+  <rect width="512" height="512" fill="#2563eb"/>
+  <circle cx="404" cy="108" r="72" fill="#fbbf24"/>
+  <path d="M96 218 256 112l160 106v38H96v-38Z" fill="#fff"/>
+  <path d="M122 282h54v112h-54zm107 0h54v112h-54zm107 0h54v112h-54z" fill="#dbeafe"/>
+  <path d="M82 394h348v54H82z" fill="#fff"/>
+  <path d="M256 150c30 0 54 19 54 43s-24 43-54 43-54-19-54-43 24-43 54-43Z" fill="#34d399"/>
+  <path d="M256 166v54m-18-42h28c18 0 18 21 0 21h-20c-18 0-18 21 0 21h28" fill="none" stroke="#064e3b" stroke-linecap="round" stroke-width="10"/>
+</svg>

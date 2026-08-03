@@ -1,3 +1,7 @@
+## PWA Sprint
+
+Added optional home-screen installation, branded app icons, standalone display metadata, and a cached application shell without enabling offline financial writes.
+
 ## Production Polish
 
 Removed the local-recovery controls and visible cloud-status banner. Cloud synchronization diagnostics now go to the browser console while confirmed-cloud caching and save protection remain active.
