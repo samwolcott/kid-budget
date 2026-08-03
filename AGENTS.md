@@ -1,22 +1,86 @@
-## Development
+# The Family Bank
 
-When starting the dev server, use background mode:
+## Vision
 
-```
-astro dev --background
-```
+The Family Bank is a digital envelope budgeting app for my two children.
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+The goal is not to automate financial decisions.
 
-## Documentation
+The goal is to teach kids how to intentionally manage money.
 
-Full documentation: https://docs.astro.build
+Every feature should reinforce one of these habits:
 
-Consult these guides before working on related tasks:
+- Spend intentionally
+- Save toward goals
+- Give generously
+- Plan before spending
 
-- [Adding pages, dynamic routes, or middleware](https://docs.astro.build/en/guides/routing/)
-- [Working with Astro components](https://docs.astro.build/en/basics/astro-components/)
-- [Using React, Vue, Svelte, or other framework components](https://docs.astro.build/en/guides/framework-components/)
-- [Adding or managing content](https://docs.astro.build/en/guides/content-collections/)
-- [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
-- [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
+If a feature removes thinking from the child, it probably doesn't belong.
+
+---
+
+## Tech Stack
+
+- Astro
+- TypeScript
+- Tailwind
+- LocalStorage persistence
+- GitHub Pages deployment
+
+Do not introduce React, Vue, or other frameworks.
+
+Avoid adding dependencies unless absolutely necessary.
+
+---
+
+## Design Principles
+
+Keep everything:
+
+- simple
+- colorful
+- approachable
+- kid-friendly
+
+No enterprise UI.
+
+No complicated workflows.
+
+The app should feel like something a 7-year-old can understand.
+
+---
+
+## Coding Style
+
+Prefer:
+
+- readable code
+- explicit logic
+- small functions
+
+Avoid overengineering.
+
+One sprint = one feature.
+
+---
+
+## Current Features
+
+- Parent dashboard
+- Kid dashboard
+- Allowance
+- Purchase requests
+- Savings goals
+- Goal allocation
+- Goal editing
+- Goal completion
+- Bucket transfers
+- Local persistence
+
+---
+
+## Roadmap
+
+Focus on polishing existing features before adding major new ones.
+
+Always preserve the existing UI and design language.

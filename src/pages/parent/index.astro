@@ -34,7 +34,55 @@ const demoJson = JSON.stringify(demoKids);
       </button>
     </header>
 
-    <section class="rounded-3xl bg-slate-950 p-6 text-white sm:p-8">
+    <section aria-labelledby="overview-heading">
+      <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">
+        Overview
+      </p>
+
+      <h2 id="overview-heading" class="mt-1 text-2xl font-black">
+        Family at a glance
+      </h2>
+
+      <div class="mt-4 grid gap-3 sm:grid-cols-3">
+        <article class="rounded-2xl bg-blue-50 p-5 ring-1 ring-blue-100">
+          <div class="grid h-10 w-10 place-items-center rounded-xl bg-blue-100 text-xl" aria-hidden="true">
+            💰
+          </div>
+          <p class="mt-4 text-xs font-extrabold uppercase tracking-[0.12em] text-blue-700">
+            Family balance
+          </p>
+          <p id="family-balance" class="mt-1 text-2xl font-black text-blue-950">
+            $0.00
+          </p>
+        </article>
+
+        <article class="rounded-2xl bg-emerald-50 p-5 ring-1 ring-emerald-100">
+          <div class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-100 text-xl" aria-hidden="true">
+            👥
+          </div>
+          <p class="mt-4 text-xs font-extrabold uppercase tracking-[0.12em] text-emerald-700">
+            Kid accounts
+          </p>
+          <p id="kid-count" class="mt-1 text-2xl font-black text-emerald-950">
+            0
+          </p>
+        </article>
+
+        <article class="rounded-2xl bg-amber-50 p-5 ring-1 ring-amber-100">
+          <div class="grid h-10 w-10 place-items-center rounded-xl bg-amber-100 text-xl" aria-hidden="true">
+            🔔
+          </div>
+          <p class="mt-4 text-xs font-extrabold uppercase tracking-[0.12em] text-amber-700">
+            Needs review
+          </p>
+          <p id="overview-request-count" class="mt-1 text-2xl font-black text-amber-950">
+            0 requests
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mt-10 rounded-3xl bg-slate-950 p-6 text-white sm:p-8">
       <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-slate-400">
         Allowance
       </p>
@@ -822,10 +870,25 @@ const demoJson = JSON.stringify(demoKids);
           "#kid-list",
         );
 
+      const familyBalance = document.querySelector(
+        "#family-balance",
+      );
+
+      const kidCount = document.querySelector(
+        "#kid-count",
+      );
+
+      const overviewRequestCount = document.querySelector(
+        "#overview-request-count",
+      );
+
       if (
         !(requestList instanceof HTMLElement) ||
         !(requestCount instanceof HTMLElement) ||
-        !(kidList instanceof HTMLElement)
+        !(kidList instanceof HTMLElement) ||
+        !(familyBalance instanceof HTMLElement) ||
+        !(kidCount instanceof HTMLElement) ||
+        !(overviewRequestCount instanceof HTMLElement)
       ) {
         return;
       }
@@ -838,6 +901,21 @@ const demoJson = JSON.stringify(demoKids);
 
       requestCount.textContent =
         `${pending.length} pending`;
+
+      const kids = Object.values(state.kids);
+      const totalBalance = kids.reduce(
+        (familyTotal, kid) =>
+          familyTotal +
+          kid.buckets.spending +
+          kid.buckets.saving +
+          kid.buckets.giving,
+        0,
+      );
+
+      familyBalance.textContent = money.format(totalBalance);
+      kidCount.textContent = `${kids.length}`;
+      overviewRequestCount.textContent =
+        `${pending.length} ${pending.length === 1 ? "request" : "requests"}`;
 
       requestList.innerHTML =
         pending.length > 0
@@ -888,7 +966,7 @@ const demoJson = JSON.stringify(demoKids);
             `;
 
       kidList.innerHTML =
-        Object.values(state.kids)
+        kids
           .map((kid) => {
             const total =
               kid.buckets.spending +
@@ -931,6 +1009,16 @@ const demoJson = JSON.stringify(demoKids);
                     Give<br />
                     ${money.format(kid.buckets.giving)}
                   </div>
+                </div>
+
+                <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
+                  <span class="text-slate-500">
+                    ${money.format(kid.allowanceAmount)} allowance
+                  </span>
+
+                  <span class="font-bold text-blue-600">
+                    Open account →
+                  </span>
                 </div>
               </a>
             `;

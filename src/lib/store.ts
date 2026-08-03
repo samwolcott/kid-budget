@@ -192,25 +192,41 @@ export function moveMoney(
     );
   }
 
-  if (kid.buckets[from] < amount) {
+  const transferAmount = roundCurrency(amount);
+
+  if (transferAmount <= 0) {
     throw new Error(
-      `There isn't enough money in ${from}.`,
+      "Enter an amount of at least $0.01.",
+    );
+  }
+
+  const allocatedSavings = kid.goals.reduce(
+    (sum, goal) => sum + goal.saved,
+    0,
+  );
+  const availableBalance = from === "saving"
+    ? roundCurrency(kid.buckets.saving - allocatedSavings)
+    : kid.buckets[from];
+
+  if (availableBalance < transferAmount) {
+    throw new Error(
+      `There isn't enough available money in ${from}.`,
     );
   }
 
   kid.buckets[from] = roundCurrency(
-    kid.buckets[from] - amount,
+    kid.buckets[from] - transferAmount,
   );
 
   kid.buckets[to] = roundCurrency(
-    kid.buckets[to] + amount,
+    kid.buckets[to] + transferAmount,
   );
 
   kid.transactions.unshift({
     id: crypto.randomUUID(),
     date: today(),
     description: `Moved ${from} → ${to}`,
-    amount: roundCurrency(amount),
+    amount: transferAmount,
     bucket: to,
     type: "transfer",
   });
