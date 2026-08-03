@@ -51,6 +51,7 @@ const demoJson = JSON.stringify(demoKids);
 <Layout
   title={`${kid.name} | The Family Bank`}
   description={`${kid.name}'s spending, saving, and giving dashboard.`}
+  profile={kid.slug as "judah" | "max"}
 >
   <main
     id="kid-dashboard"
@@ -61,6 +62,7 @@ const demoJson = JSON.stringify(demoKids);
     <Header
       name={kid.name}
       emoji={kid.emoji}
+      slug={kid.slug as "judah" | "max"}
     />
 
     <BalanceCard

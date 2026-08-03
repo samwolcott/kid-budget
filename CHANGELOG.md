@@ -1,3 +1,7 @@
+## Supabase Sprint S4
+
+Added family PIN setup, a profile chooser and lock screen, guarded parent and kid dashboards, remembered kid devices, visible lock and switch controls, and failed-attempt throttling.
+
 ## Supabase Sprint S3
 
 Added parent email/password authentication, persistent session restoration, family account setup, sign-out, and signed-out local demo mode while keeping all budgeting data in LocalStorage.

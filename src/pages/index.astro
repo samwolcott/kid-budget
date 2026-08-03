@@ -6,72 +6,319 @@ import Layout from "../layouts/Layout.astro";
   title="The Family Bank"
   description="Learn to spend, save, and give wisely."
 >
-  <main class="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center px-5 py-10">
+  <main
+    id="profile-home"
+    class="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center px-5 py-10"
+    data-base-url={import.meta.env.BASE_URL}
+  >
     <div class="text-center">
-      <div class="text-6xl">🏦</div>
-
-      <p class="mt-6 text-xs font-extrabold uppercase tracking-[0.2em] text-blue-600">
-        Welcome to
-      </p>
-
-      <h1 class="mt-2 text-5xl font-black tracking-tight text-slate-950">
-        The Family Bank
-      </h1>
-
-      <p class="mt-3 text-slate-500">
-        Learn to spend, save, and give wisely.
-      </p>
+      <div class="text-6xl" aria-hidden="true">🏦</div>
+      <p class="mt-6 text-xs font-extrabold uppercase tracking-[0.2em] text-blue-600">Welcome to</p>
+      <h1 class="mt-2 text-5xl font-black tracking-tight text-slate-950">The Family Bank</h1>
+      <p class="mt-3 text-slate-500">Learn to spend, save, and give wisely.</p>
     </div>
 
-    <div class="mt-10 grid gap-4">
-      <a
-        href={`${import.meta.env.BASE_URL}kids/judah/`}
-        class="flex items-center gap-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
-      >
-        <span class="text-4xl">😎</span>
+    <section id="profile-loading" class="mt-10 rounded-3xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-200" aria-live="polite">
+      <div class="text-3xl" aria-hidden="true">🔐</div>
+      <p class="mt-3 font-bold text-slate-600">Getting your family ready…</p>
+    </section>
 
-        <span class="flex-1">
-          <strong class="block text-xl">
-            Judah
-          </strong>
+    <section id="pin-setup" class="mt-10 hidden rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200" aria-labelledby="pin-setup-heading">
+      <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-emerald-600">One-time setup</p>
+      <h2 id="pin-setup-heading" class="mt-1 text-2xl font-black">Choose 3 family PINs</h2>
+      <p class="mt-2 text-sm leading-6 text-slate-500">Use a different 4-number PIN for each person, and ask a parent to keep them somewhere safe.</p>
 
-          <span class="text-sm text-slate-500">
-            Check your account
-          </span>
-        </span>
+      <form id="pin-setup-form" class="mt-6 grid gap-4">
+        <fieldset class="grid gap-3 rounded-2xl bg-slate-50 p-4">
+          <legend class="px-1 font-black text-slate-900">🔒 Parent</legend>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="text-sm font-bold text-slate-700">PIN<input name="parent" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-center text-xl tracking-[0.35em] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" /></label>
+            <label class="text-sm font-bold text-slate-700">Confirm<input name="parentConfirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-center text-xl tracking-[0.35em] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" /></label>
+          </div>
+        </fieldset>
 
-        <span class="text-2xl text-slate-300">
-          →
-        </span>
-      </a>
+        <fieldset class="grid gap-3 rounded-2xl bg-blue-50 p-4">
+          <legend class="px-1 font-black text-slate-900">😎 Judah</legend>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="text-sm font-bold text-slate-700">PIN<input name="judah" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-blue-100 bg-white px-4 py-3 text-center text-xl tracking-[0.35em] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" /></label>
+            <label class="text-sm font-bold text-slate-700">Confirm<input name="judahConfirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-blue-100 bg-white px-4 py-3 text-center text-xl tracking-[0.35em] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" /></label>
+          </div>
+        </fieldset>
 
-      <a
-        href={`${import.meta.env.BASE_URL}kids/max/`}
-        class="flex items-center gap-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
-      >
-        <span class="text-4xl">🤘</span>
+        <fieldset class="grid gap-3 rounded-2xl bg-violet-50 p-4">
+          <legend class="px-1 font-black text-slate-900">🤘 Max</legend>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="text-sm font-bold text-slate-700">PIN<input name="max" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-violet-100 bg-white px-4 py-3 text-center text-xl tracking-[0.35em] outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" /></label>
+            <label class="text-sm font-bold text-slate-700">Confirm<input name="maxConfirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-violet-100 bg-white px-4 py-3 text-center text-xl tracking-[0.35em] outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" /></label>
+          </div>
+        </fieldset>
 
-        <span class="flex-1">
-          <strong class="block text-xl">
-            Max
-          </strong>
+        <p id="pin-setup-error" class="hidden rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700"></p>
+        <button type="submit" class="rounded-xl bg-slate-950 px-5 py-3 font-bold text-white transition hover:bg-slate-800 disabled:cursor-wait disabled:opacity-60">Save Family PINs</button>
+      </form>
+    </section>
 
-          <span class="text-sm text-slate-500">
-            Check your account
-          </span>
-        </span>
+    <section id="profile-chooser" class="mt-10 hidden" aria-labelledby="profile-heading">
+      <div id="profile-mode-note" class="mb-4 hidden rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-800 ring-1 ring-amber-100"></div>
+      <h2 id="profile-heading" class="text-center text-xl font-black">Who are you?</h2>
+      <div class="mt-4 grid gap-4">
+        <button type="button" data-profile="judah" class="flex items-center gap-4 rounded-3xl bg-white p-6 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"><span class="text-4xl">😎</span><span class="flex-1"><strong class="block text-xl">Judah</strong><span class="text-sm text-slate-500">Check your account</span></span><span class="text-2xl text-slate-300">→</span></button>
+        <button type="button" data-profile="max" class="flex items-center gap-4 rounded-3xl bg-white p-6 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"><span class="text-4xl">🤘</span><span class="flex-1"><strong class="block text-xl">Max</strong><span class="text-sm text-slate-500">Check your account</span></span><span class="text-2xl text-slate-300">→</span></button>
+      </div>
+      <button type="button" data-profile="parent" class="mx-auto mt-8 block rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50">🔒 Parent Dashboard</button>
+    </section>
 
-        <span class="text-2xl text-slate-300">
-          →
-        </span>
-      </a>
-    </div>
+    <section id="pin-unlock" class="mt-10 hidden rounded-3xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-200" aria-labelledby="pin-unlock-heading">
+      <button id="back-to-profiles" type="button" class="float-left rounded-xl px-2 py-1 text-sm font-bold text-slate-500 hover:bg-slate-50">← Back</button>
+      <div id="unlock-emoji" class="clear-both pt-2 text-5xl" aria-hidden="true">🙂</div>
+      <p class="mt-4 text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">Welcome back</p>
+      <h2 id="pin-unlock-heading" class="mt-1 text-2xl font-black">Enter your PIN</h2>
 
-    <a
-      href={`${import.meta.env.BASE_URL}parent/`}
-      class="mx-auto mt-8 rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
-    >
-      🔒 Parent Dashboard
-    </a>
+      <form id="pin-unlock-form" class="mt-6">
+        <label class="sr-only" for="profile-pin">4-number PIN</label>
+        <input id="profile-pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required class="mx-auto block w-44 rounded-2xl border border-slate-200 px-4 py-4 text-center text-3xl tracking-[0.4em] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+        <label id="remember-device-label" class="mx-auto mt-4 hidden w-fit items-center gap-2 text-sm font-bold text-slate-600"><input name="remember" type="checkbox" class="h-4 w-4 accent-blue-600" /> Remember this kid on this device</label>
+        <p id="pin-error" class="mt-4 hidden rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700"></p>
+        <button id="unlock-button" type="submit" class="mt-5 w-full rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60">Unlock</button>
+      </form>
+    </section>
   </main>
 </Layout>
+
+<script>
+  import { loadParentAccount, type ParentAccount } from "../lib/auth";
+  import {
+    getRememberedKidProfile,
+    rememberKidProfile,
+    setupProfilePins,
+    unlockProfile,
+    verifyProfilePin,
+    type ProfileSlug,
+  } from "../lib/profileLock";
+  import { getSupabaseClient } from "../lib/supabase";
+
+  const home = document.querySelector<HTMLElement>("#profile-home");
+  const loading = document.querySelector<HTMLElement>("#profile-loading");
+  const setup = document.querySelector<HTMLElement>("#pin-setup");
+  const chooser = document.querySelector<HTMLElement>("#profile-chooser");
+  const unlock = document.querySelector<HTMLElement>("#pin-unlock");
+  const setupForm = document.querySelector<HTMLFormElement>("#pin-setup-form");
+  const unlockForm = document.querySelector<HTMLFormElement>("#pin-unlock-form");
+  const setupError = document.querySelector<HTMLElement>("#pin-setup-error");
+  const pinError = document.querySelector<HTMLElement>("#pin-error");
+  const modeNote = document.querySelector<HTMLElement>("#profile-mode-note");
+  const unlockHeading = document.querySelector<HTMLElement>("#pin-unlock-heading");
+  const unlockEmoji = document.querySelector<HTMLElement>("#unlock-emoji");
+  const rememberLabel = document.querySelector<HTMLElement>("#remember-device-label");
+  const pinInput = document.querySelector<HTMLInputElement>("#profile-pin");
+  const unlockButton = document.querySelector<HTMLButtonElement>("#unlock-button");
+  const client = getSupabaseClient();
+  const baseUrl = home?.dataset.baseUrl ?? "/";
+  const profileDetails = {
+    parent: { name: "Parent", emoji: "🔒", path: "parent/" },
+    judah: { name: "Judah", emoji: "😎", path: "kids/judah/" },
+    max: { name: "Max", emoji: "🤘", path: "kids/max/" },
+  } satisfies Record<ProfileSlug, { name: string; emoji: string; path: string }>;
+
+  let account: ParentAccount | null = null;
+  let selectedProfile: ProfileSlug = "parent";
+  let cloudPinsEnabled = false;
+  let failedAttempts = 0;
+  let blockedUntil = 0;
+  let cooldownTimer: number | undefined;
+
+  function show(view: HTMLElement | null): void {
+    [loading, setup, chooser, unlock].forEach((item) => item?.classList.add("hidden"));
+    view?.classList.remove("hidden");
+  }
+
+  function showChooser(note?: string): void {
+    if (modeNote) {
+      modeNote.textContent = note ?? "";
+      modeNote.classList.toggle("hidden", !note);
+    }
+    show(chooser);
+  }
+
+  function goToProfile(profile: ProfileSlug): void {
+    window.location.assign(`${baseUrl}${profileDetails[profile].path}`);
+  }
+
+  function chooseProfile(profile: ProfileSlug): void {
+    if (!cloudPinsEnabled || !account || !client) {
+      goToProfile(profile);
+      return;
+    }
+
+    selectedProfile = profile;
+    failedAttempts = 0;
+    blockedUntil = 0;
+    window.clearInterval(cooldownTimer);
+    if (unlockHeading) unlockHeading.textContent = `${profileDetails[profile].name}'s PIN`;
+    if (unlockEmoji) unlockEmoji.textContent = profileDetails[profile].emoji;
+    rememberLabel?.classList.toggle("hidden", profile === "parent");
+    rememberLabel?.classList.toggle("flex", profile !== "parent");
+    unlockForm?.reset();
+    const rememberInput = unlockForm?.elements.namedItem("remember");
+    if (rememberInput instanceof HTMLInputElement) {
+      rememberInput.checked = profile !== "parent" && getRememberedKidProfile() === profile;
+    }
+    pinError?.classList.add("hidden");
+    show(unlock);
+    pinInput?.focus();
+  }
+
+  document.querySelectorAll<HTMLButtonElement>("[data-profile]").forEach((button) => {
+    button.addEventListener("click", () => chooseProfile(button.dataset.profile as ProfileSlug));
+  });
+
+  document.querySelector("#back-to-profiles")?.addEventListener("click", () => {
+    window.clearInterval(cooldownTimer);
+    showChooser();
+  });
+
+  setupForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!client || !account || !setupForm.reportValidity()) return;
+
+    const data = new FormData(setupForm);
+    const pins = {
+      parent: String(data.get("parent") ?? ""),
+      judah: String(data.get("judah") ?? ""),
+      max: String(data.get("max") ?? ""),
+    };
+
+    if (["parent", "judah", "max"].some((profile) => pins[profile as ProfileSlug] !== data.get(`${profile}Confirm`))) {
+      if (setupError) {
+        setupError.textContent = "Each PIN must match its confirmation.";
+        setupError.classList.remove("hidden");
+      }
+      return;
+    }
+
+    if (new Set(Object.values(pins)).size !== 3) {
+      if (setupError) {
+        setupError.textContent = "Choose a different PIN for each person.";
+        setupError.classList.remove("hidden");
+      }
+      return;
+    }
+
+    setupError?.classList.add("hidden");
+    setupForm.querySelector<HTMLButtonElement>("button")!.disabled = true;
+
+    try {
+      await setupProfilePins(client, pins);
+      cloudPinsEnabled = true;
+      setupForm.reset();
+      showChooser();
+    } catch (caught) {
+      if (setupError) {
+        setupError.textContent = caught instanceof Error ? caught.message : "We couldn't save the PINs.";
+        setupError.classList.remove("hidden");
+      }
+    } finally {
+      setupForm.querySelector<HTMLButtonElement>("button")!.disabled = false;
+    }
+  });
+
+  function startCooldown(): void {
+    blockedUntil = Date.now() + 30_000;
+    if (unlockButton) unlockButton.disabled = true;
+
+    const update = () => {
+      const seconds = Math.max(0, Math.ceil((blockedUntil - Date.now()) / 1000));
+      if (pinError) {
+        pinError.textContent = seconds > 0
+          ? `Too many tries. Please wait ${seconds} seconds.`
+          : "You can try again now.";
+        pinError.classList.remove("hidden");
+      }
+      if (seconds === 0) {
+        window.clearInterval(cooldownTimer);
+        failedAttempts = 0;
+        if (unlockButton) unlockButton.disabled = false;
+      }
+    };
+
+    update();
+    cooldownTimer = window.setInterval(update, 1000);
+  }
+
+  unlockForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!client || !account || !unlockForm.reportValidity() || Date.now() < blockedUntil) return;
+
+    const data = new FormData(unlockForm);
+    const pin = String(data.get("pin") ?? "");
+    if (unlockButton) unlockButton.disabled = true;
+    pinError?.classList.add("hidden");
+
+    try {
+      const valid = await verifyProfilePin(client, selectedProfile, pin);
+
+      if (!valid) {
+        failedAttempts += 1;
+        pinInput?.select();
+
+        if (failedAttempts >= 3) {
+          startCooldown();
+        } else if (pinError) {
+          pinError.textContent = `That PIN didn't match. ${3 - failedAttempts} ${failedAttempts === 2 ? "try" : "tries"} left.`;
+          pinError.classList.remove("hidden");
+        }
+        return;
+      }
+
+      unlockProfile(selectedProfile, account.family.id);
+      const remember = data.get("remember") === "on";
+      if (selectedProfile === "judah" || selectedProfile === "max") {
+        rememberKidProfile(remember ? selectedProfile : null);
+      }
+      goToProfile(selectedProfile);
+    } catch (caught) {
+      if (pinError) {
+        pinError.textContent = caught instanceof Error ? caught.message : "We couldn't check that PIN.";
+        pinError.classList.remove("hidden");
+      }
+    } finally {
+      if (unlockButton && Date.now() >= blockedUntil) unlockButton.disabled = false;
+    }
+  });
+
+  async function initialize(): Promise<void> {
+    const requested = new URLSearchParams(window.location.search).get("profile");
+    const requestedProfile = requested === "parent" || requested === "judah" || requested === "max" ? requested : null;
+
+    if (!client) {
+      showChooser("Local demo mode · Add Supabase settings to enable family PINs.");
+      return;
+    }
+
+    try {
+      account = await loadParentAccount(client);
+
+      if (!account) {
+        showChooser("Local demo mode · Sign in from the Parent Dashboard to set up family PINs.");
+        return;
+      }
+
+      const { loadProfileLockState } = await import("../lib/profileLock");
+      const lockState = await loadProfileLockState(client);
+
+      if (!lockState.configured) {
+        show(setup);
+        return;
+      }
+
+      cloudPinsEnabled = true;
+      const remembered = getRememberedKidProfile();
+      const nextProfile = requestedProfile ?? remembered;
+      nextProfile ? chooseProfile(nextProfile) : showChooser();
+    } catch (caught) {
+      showChooser(caught instanceof Error ? caught.message : "We couldn't load the profile lock. Local demo mode is still available.");
+    }
+  }
+
+  void initialize();
+</script>

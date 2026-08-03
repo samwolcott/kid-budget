@@ -216,13 +216,13 @@ Acceptance criteria:
 
 ### Sprint S4 — Profile PIN Lock
 
-- [ ] Add PIN setup for Parent, Judah, and Max.
-- [ ] Turn the home page into the profile chooser and lock screen.
-- [ ] Guard parent and kid routes against locked profiles.
-- [ ] Store only the temporary unlock in `sessionStorage`.
-- [ ] Allow a device to be remembered as Judah or Max.
-- [ ] Add visible Lock and Switch Profile controls.
-- [ ] Add basic failed-attempt throttling in the UI.
+- [x] Add PIN setup for Parent, Judah, and Max.
+- [x] Turn the home page into the profile chooser and lock screen.
+- [x] Guard parent and kid routes against locked profiles.
+- [x] Store only the temporary unlock in `sessionStorage`.
+- [x] Allow a device to be remembered as Judah or Max.
+- [x] Add visible Lock and Switch Profile controls.
+- [x] Add basic failed-attempt throttling in the UI.
 
 Acceptance criteria:
 

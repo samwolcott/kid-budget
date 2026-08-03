@@ -1,5 +1,6 @@
 <section
   id="parent-account"
+  data-base-url={import.meta.env.BASE_URL}
   class="mb-8 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200"
   aria-live="polite"
 >
@@ -74,8 +75,10 @@
     type ParentAccount,
   } from "../../lib/auth";
   import { getSupabaseClient } from "../../lib/supabase";
+  import { clearProfileUnlocks, rememberKidProfile } from "../../lib/profileLock";
 
   const loading = document.querySelector<HTMLElement>("#auth-loading");
+  const accountPanel = document.querySelector<HTMLElement>("#parent-account");
   const unavailable = document.querySelector<HTMLElement>("#auth-unavailable");
   const signedOut = document.querySelector<HTMLElement>("#auth-signed-out");
   const signedIn = document.querySelector<HTMLElement>("#auth-signed-in");
@@ -135,7 +138,7 @@
           );
 
       if (account) {
-        showAccount(account);
+        window.location.assign(accountPanel?.dataset.baseUrl ?? "/");
       } else if (message) {
         message.textContent = "Check your email to confirm your account, then come back and sign in.";
         message.classList.remove("hidden");
@@ -160,6 +163,8 @@
 
     try {
       await signOutParent(client);
+      clearProfileUnlocks();
+      rememberKidProfile(null);
       form?.reset();
       show(signedOut);
     } catch (caught) {

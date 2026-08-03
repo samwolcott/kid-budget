@@ -1,12 +1,13 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import AuthPanel from "../../components/parent/AuthPanel.astro";
+import ProfileControls from "../../components/ProfileControls.astro";
 import { kids as demoKids } from "../../data/demo";
 
 const demoJson = JSON.stringify(demoKids);
 ---
 
-<Layout title="Parent Dashboard | The Family Bank">
+<Layout title="Parent Dashboard | The Family Bank" profile="parent">
   <main class="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
     <AuthPanel />
 
@@ -28,13 +29,16 @@ const demoJson = JSON.stringify(demoKids);
         </h1>
       </div>
 
-      <button
-        id="reset-button"
-        type="button"
-        class="rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
-      >
-        Reset demo
-      </button>
+      <div class="flex flex-col items-end gap-2">
+        <ProfileControls profile="parent" />
+        <button
+          id="reset-button"
+          type="button"
+          class="rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+        >
+          Reset demo
+        </button>
+      </div>
     </header>
 
     <section aria-labelledby="overview-heading">

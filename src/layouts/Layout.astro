@@ -1,14 +1,18 @@
 ---
 import "../styles/global.css";
+import ProfileGuard from "../components/ProfileGuard.astro";
+import type { ProfileSlug } from "../lib/profileLock";
 
 interface Props {
   title?: string;
   description?: string;
+  profile?: ProfileSlug;
 }
 
 const {
   title = "The Family Bank",
   description = "Learn to spend, save, and give wisely.",
+  profile,
 } = Astro.props;
 ---
 
@@ -23,5 +27,6 @@ const {
 
   <body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
     <slot />
+    {profile && <ProfileGuard profile={profile} />}
   </body>
 </html>

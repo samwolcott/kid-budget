@@ -1,0 +1,73 @@
+---
+import type { ProfileSlug } from "../lib/profileLock";
+
+interface Props {
+  profile: ProfileSlug;
+}
+
+const { profile } = Astro.props;
+---
+
+<div
+  id="profile-guard"
+  data-profile={profile}
+  data-base-url={import.meta.env.BASE_URL}
+  class="fixed inset-0 z-[100] grid place-items-center bg-slate-100 px-5"
+>
+  <div class="text-center">
+    <div class="text-5xl" aria-hidden="true">🔐</div>
+    <p class="mt-4 font-bold text-slate-600">Checking your profile…</p>
+  </div>
+</div>
+
+<script>
+  import { loadParentAccount } from "../lib/auth";
+  import {
+    isProfileUnlocked,
+    loadProfileLockState,
+    type ProfileSlug,
+  } from "../lib/profileLock";
+  import { getSupabaseClient } from "../lib/supabase";
+
+  const guard = document.querySelector<HTMLElement>("#profile-guard");
+
+  async function checkProfile(): Promise<void> {
+    if (!guard) return;
+
+    const profile = guard.dataset.profile as ProfileSlug;
+    const baseUrl = guard.dataset.baseUrl ?? "/";
+    const client = getSupabaseClient();
+
+    if (!client) {
+      guard.remove();
+      return;
+    }
+
+    try {
+      const account = await loadParentAccount(client);
+
+      if (!account) {
+        guard.remove();
+        return;
+      }
+
+      const lockState = await loadProfileLockState(client);
+
+      if (!lockState.configured) {
+        window.location.replace(baseUrl);
+        return;
+      }
+
+      if (isProfileUnlocked(profile, account.family.id)) {
+        guard.remove();
+        return;
+      }
+
+      window.location.replace(`${baseUrl}?profile=${profile}`);
+    } catch {
+      window.location.replace(`${baseUrl}?lockError=1`);
+    }
+  }
+
+  void checkProfile();
+</script>

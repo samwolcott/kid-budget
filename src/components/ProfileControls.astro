@@ -1,0 +1,39 @@
+---
+import type { ProfileSlug } from "../lib/profileLock";
+
+interface Props {
+  profile: ProfileSlug;
+}
+
+const { profile } = Astro.props;
+---
+
+<div class="flex flex-wrap justify-end gap-2" data-profile-controls data-profile={profile} data-base-url={import.meta.env.BASE_URL}>
+  <button type="button" data-lock class="inline-flex min-h-10 items-center justify-center rounded-xl bg-white px-3 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50">🔒 Lock</button>
+  <button type="button" data-switch class="inline-flex min-h-10 items-center justify-center rounded-xl bg-white px-3 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50">Switch</button>
+</div>
+
+<script>
+  import {
+    clearProfileUnlocks,
+    lockProfile,
+    rememberKidProfile,
+    type ProfileSlug,
+  } from "../lib/profileLock";
+
+  document.querySelectorAll<HTMLElement>("[data-profile-controls]").forEach((controls) => {
+    const profile = controls.dataset.profile as ProfileSlug;
+    const baseUrl = controls.dataset.baseUrl ?? "/";
+
+    controls.querySelector("[data-lock]")?.addEventListener("click", () => {
+      lockProfile(profile);
+      window.location.assign(`${baseUrl}?profile=${profile}`);
+    });
+
+    controls.querySelector("[data-switch]")?.addEventListener("click", () => {
+      clearProfileUnlocks();
+      rememberKidProfile(null);
+      window.location.assign(baseUrl);
+    });
+  });
+</script>
