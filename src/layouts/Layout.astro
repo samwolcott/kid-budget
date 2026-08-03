@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import ProfileGuard from "../components/ProfileGuard.astro";
+import StorageStatusBanner from "../components/StorageStatusBanner.astro";
 import type { ProfileSlug } from "../lib/profileLock";
 
 interface Props {
@@ -26,6 +27,7 @@ const {
   </head>
 
   <body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
+    {profile && <StorageStatusBanner />}
     <slot />
     {profile && <ProfileGuard profile={profile} />}
   </body>

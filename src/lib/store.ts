@@ -10,8 +10,34 @@ import {
   createFallbackState,
   LocalStorageStateRepository,
 } from "./storage";
+import { loadParentAccount } from "./auth";
+import {
+  fetchCloudSnapshot,
+  CloudConflictError,
+  isEmptyCloudState,
+  loadCloudCache,
+  saveCloudCache,
+  saveCloudState,
+  type CloudSnapshot,
+} from "./cloudStorage";
+import {
+  getStorageMode,
+  setStorageStatus,
+} from "./storageMode";
+import { getSupabaseClient } from "./supabase";
 
 const stateRepository = new LocalStorageStateRepository();
+let cloudSnapshot: CloudSnapshot | null = null;
+let pendingAllowanceSplit: AllowanceSplit | null = null;
+let cloudSavePending = false;
+
+function replaceState(
+  target: FamilyBankState,
+  source: FamilyBankState,
+): void {
+  target.kids = structuredClone(source.kids);
+  target.purchaseRequests = structuredClone(source.purchaseRequests);
+}
 
 export type { AllowanceSplit } from "../types";
 
@@ -31,28 +57,191 @@ function today(): string {
 export async function loadState(
   fallbackKids: Record<string, Kid>,
 ): Promise<FamilyBankState> {
+  if (getStorageMode() === "cloud") {
+    setStorageStatus({
+      kind: "loading",
+      message: "Loading shared cloud data…",
+    });
+
+    const client = getSupabaseClient();
+    if (!client) {
+      setStorageStatus({
+        kind: "offline",
+        message: "Supabase is not configured. Showing local data instead.",
+      });
+      return stateRepository.load(fallbackKids);
+    }
+
+    try {
+      const account = await loadParentAccount(client);
+      if (!account) {
+        setStorageStatus({
+          kind: "offline",
+          message: "Parent sign-in is required. Showing local data instead.",
+        });
+        return stateRepository.load(fallbackKids);
+      }
+
+      try {
+        cloudSnapshot = await fetchCloudSnapshot(
+          client,
+          account.family.id,
+          fallbackKids,
+        );
+
+        try {
+          saveCloudCache(cloudSnapshot);
+        } catch {
+          // A cache failure does not invalidate a successful cloud read.
+        }
+
+        const empty = isEmptyCloudState(cloudSnapshot.state);
+        setStorageStatus({
+          kind: empty ? "empty" : "cloud",
+          message: empty
+            ? "Cloud data is ready and currently empty."
+            : "Shared cloud data is active.",
+        });
+        return structuredClone(cloudSnapshot.state);
+      } catch {
+        cloudSnapshot = loadCloudCache(account.family.id);
+
+        if (cloudSnapshot) {
+          setStorageStatus({
+            kind: "cached",
+            message: "Cloud is unavailable. Showing the last confirmed cloud cache.",
+          });
+          return structuredClone(cloudSnapshot.state);
+        }
+
+        setStorageStatus({
+          kind: "offline",
+          message: "Cloud is unavailable and has no cache. Showing local data instead.",
+        });
+        return stateRepository.load(fallbackKids);
+      }
+    } catch {
+      setStorageStatus({
+        kind: "offline",
+        message: "Parent session could not be restored. Showing local data instead.",
+      });
+      return stateRepository.load(fallbackKids);
+    }
+  }
+
+  cloudSnapshot = null;
+  pendingAllowanceSplit = null;
+  setStorageStatus({
+    kind: "local",
+    message: "LocalStorage is active.",
+  });
   return stateRepository.load(fallbackKids);
 }
 
 export async function saveState(
   state: FamilyBankState,
 ): Promise<void> {
+  if (getStorageMode() === "cloud") {
+    if (cloudSavePending) {
+      throw new Error("A cloud save is already in progress.");
+    }
+
+    if (!cloudSnapshot) {
+      throw new Error("Cloud data is not ready. Reload before making changes.");
+    }
+
+    const confirmedSnapshot = structuredClone(cloudSnapshot);
+    const split = pendingAllowanceSplit ?? confirmedSnapshot.allowanceSplit;
+    cloudSavePending = true;
+    setStorageStatus({
+      kind: "saving",
+      message: "Saving and confirming your change…",
+    });
+
+    try {
+      const client = getSupabaseClient();
+      if (!client) throw new Error("Supabase is not configured.");
+
+      const account = await loadParentAccount(client);
+      if (!account || account.family.id !== confirmedSnapshot.familyId) {
+        throw new Error("The parent session changed. Reload before trying again.");
+      }
+
+      await saveCloudState(client, confirmedSnapshot, state, split);
+      const confirmed = await fetchCloudSnapshot(
+        client,
+        confirmedSnapshot.familyId,
+        confirmedSnapshot.state.kids,
+      );
+
+      cloudSnapshot = confirmed;
+      pendingAllowanceSplit = null;
+      replaceState(state, confirmed.state);
+
+      try {
+        saveCloudCache(confirmed);
+      } catch {
+        // The server confirmation remains valid if browser caching fails.
+      }
+
+      setStorageStatus({
+        kind: "cloud",
+        message: "Saved and confirmed in Supabase.",
+      });
+      return;
+    } catch (error) {
+      pendingAllowanceSplit = null;
+      replaceState(state, confirmedSnapshot.state);
+      cloudSnapshot = confirmedSnapshot;
+
+      if (error instanceof CloudConflictError) {
+        setStorageStatus({
+          kind: "conflict",
+          message: "Another device changed this family. Reload before trying again.",
+        });
+        throw error;
+      }
+
+      setStorageStatus({
+        kind: "offline",
+        message: "That change was not confirmed. Reload before retrying.",
+      });
+      throw new Error(
+        error instanceof Error
+          ? error.message
+          : "The cloud save was not confirmed. Reload before retrying.",
+      );
+    } finally {
+      cloudSavePending = false;
+    }
+  }
   await stateRepository.save(state);
 }
 
 export async function resetState(): Promise<void> {
+  if (getStorageMode() === "cloud") {
+    throw new Error("Cloud reset is not available yet. Switch to Local Data first.");
+  }
   await stateRepository.reset();
 }
 
 export async function loadAllowanceSplit(
   fallback: AllowanceSplit,
 ): Promise<AllowanceSplit> {
+  if (getStorageMode() === "cloud") {
+    return cloudSnapshot?.allowanceSplit
+      ?? fallback;
+  }
   return stateRepository.loadAllowanceSplit(fallback);
 }
 
 export async function saveAllowanceSplit(
   split: AllowanceSplit,
 ): Promise<void> {
+  if (getStorageMode() === "cloud") {
+    pendingAllowanceSplit = structuredClone(split);
+    return;
+  }
   await stateRepository.saveAllowanceSplit(split);
 }
 

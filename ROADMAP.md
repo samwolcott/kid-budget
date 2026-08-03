@@ -20,10 +20,15 @@
 - [x] Better history
 - [x] Confetti
 - [ ] Supabase migration ([plan](SUPABASE.md))
-- [ ] PWA
+  - [x] Foundation, parent authentication, and profile PINs
+  - [x] Read-only cloud repository and cache
+  - [x] Cloud mutation path
+  - [ ] Cutover and hardening
+- [ ] PWA (optional home-screen installation)
 
 ## Someday
 
-- [ ] Accounts
+- [ ] Full offline write queue and conflict recovery
+- [ ] Additional parent accounts
 - [ ] Realtime sync
 - [ ] Notifications

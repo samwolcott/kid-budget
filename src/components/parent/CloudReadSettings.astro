@@ -1,0 +1,69 @@
+<section class="mb-8 rounded-3xl bg-violet-50 p-5 ring-1 ring-violet-100 sm:p-6" aria-labelledby="cloud-read-heading">
+  <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+    <div>
+      <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-violet-700">Data source</p>
+      <h2 id="cloud-read-heading" class="mt-1 text-xl font-black text-violet-950">Cloud data</h2>
+      <p id="cloud-read-description" class="mt-2 text-sm leading-6 text-violet-800">Checking the active data source…</p>
+    </div>
+    <button id="cloud-read-toggle" type="button" disabled class="shrink-0 rounded-xl bg-violet-700 px-5 py-3 font-bold text-white transition hover:bg-violet-800 disabled:cursor-wait disabled:opacity-50">Checking…</button>
+  </div>
+</section>
+
+<script>
+  import { loadParentAccount } from "../../lib/auth";
+  import {
+    getStorageMode,
+    setStorageMode,
+  } from "../../lib/storageMode";
+  import { getSupabaseClient } from "../../lib/supabase";
+
+  const description = document.querySelector<HTMLElement>("#cloud-read-description");
+  const toggle = document.querySelector<HTMLButtonElement>("#cloud-read-toggle");
+
+  function render(): void {
+    const cloud = getStorageMode() === "cloud";
+    if (description) {
+      description.textContent = cloud
+        ? "Supabase is active on this device. Successful changes are confirmed and cached locally."
+        : "LocalStorage is active. You can opt into the fresh shared cloud account on this device.";
+    }
+    if (toggle) toggle.textContent = cloud ? "Use Local Data" : "Use Cloud Data";
+  }
+
+  toggle?.addEventListener("click", () => {
+    const cloud = getStorageMode() === "cloud";
+
+    if (!cloud) {
+      const confirmed = window.confirm(
+        "The cloud account may begin with empty balances. Future changes will save to Supabase, while your existing LocalStorage data stays separate and unchanged. Continue?",
+      );
+      if (!confirmed) return;
+    }
+
+    setStorageMode(cloud ? "local" : "cloud");
+    window.location.reload();
+  });
+
+  async function initialize(): Promise<void> {
+    render();
+    const client = getSupabaseClient();
+
+    if (!client) {
+      if (description) description.textContent = "Supabase is not configured. LocalStorage remains active.";
+      return;
+    }
+
+    try {
+      const account = await loadParentAccount(client);
+      if (!account) {
+        if (description) description.textContent = "Sign in before previewing cloud data.";
+        return;
+      }
+      if (toggle) toggle.disabled = false;
+    } catch (caught) {
+      if (description) description.textContent = caught instanceof Error ? caught.message : "Cloud preview is unavailable.";
+    }
+  }
+
+  void initialize();
+</script>

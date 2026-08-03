@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import AuthPanel from "../../components/parent/AuthPanel.astro";
 import ProfileControls from "../../components/ProfileControls.astro";
+import CloudReadSettings from "../../components/parent/CloudReadSettings.astro";
 import { kids as demoKids } from "../../data/demo";
 
 const demoJson = JSON.stringify(demoKids);
@@ -40,6 +41,8 @@ const demoJson = JSON.stringify(demoKids);
         </button>
       </div>
     </header>
+
+    <CloudReadSettings />
 
     <section aria-labelledby="overview-heading">
       <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">

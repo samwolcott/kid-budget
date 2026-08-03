@@ -76,6 +76,7 @@
   } from "../../lib/auth";
   import { getSupabaseClient } from "../../lib/supabase";
   import { clearProfileUnlocks, rememberKidProfile } from "../../lib/profileLock";
+  import { setStorageMode } from "../../lib/storageMode";
 
   const loading = document.querySelector<HTMLElement>("#auth-loading");
   const accountPanel = document.querySelector<HTMLElement>("#parent-account");
@@ -165,8 +166,9 @@
       await signOutParent(client);
       clearProfileUnlocks();
       rememberKidProfile(null);
+      setStorageMode("local");
       form?.reset();
-      show(signedOut);
+      window.location.reload();
     } catch (caught) {
       show(signedIn);
       showError(caught instanceof Error ? caught.message : "Unable to sign out.");

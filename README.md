@@ -67,3 +67,5 @@ https://samwolcott.github.io/kid-budget/parent/
 Signing in creates or restores the parent's family account, but budgeting data remains in LocalStorage until a later migration sprint.
 
 After signing in, the home page asks the parent to create separate four-digit PINs for Parent, Judah, and Max. PIN verifiers are stored in Supabase; only a temporary profile unlock is stored in browser session storage. A kid device can optionally remember Judah or Max and open directly to that child's PIN screen.
+
+The parent dashboard can opt into shared cloud data. Every budgeting change is saved atomically with a revision check, confirmed from Supabase, and cached separately. Failed writes stay visibly unconfirmed, stale devices must reload, and the original LocalStorage budget remains separate and untouched.

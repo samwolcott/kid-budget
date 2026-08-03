@@ -1,0 +1,56 @@
+<div id="storage-status-banner" class="sticky top-0 z-[60] hidden border-b border-violet-200 bg-violet-50 px-4 py-3 text-center text-sm font-bold text-violet-900 shadow-sm" role="status" aria-live="polite">
+  <span id="storage-status-message">Loading cloud data…</span>
+</div>
+
+<script>
+  import {
+    getStorageMode,
+    getStorageStatus,
+    type StorageStatus,
+  } from "../lib/storageMode";
+
+  const banner = document.querySelector<HTMLElement>("#storage-status-banner");
+  const message = document.querySelector<HTMLElement>("#storage-status-message");
+
+  function render(status: StorageStatus): void {
+    const cloud = getStorageMode() === "cloud";
+    banner?.classList.toggle("hidden", !cloud);
+    if (message) message.textContent = status.message;
+
+    if (status.kind === "saving") {
+      document.querySelectorAll<HTMLButtonElement>("button:not(:disabled)").forEach((button) => {
+        button.disabled = true;
+        button.dataset.cloudSaveDisabled = "true";
+      });
+    } else {
+      document.querySelectorAll<HTMLButtonElement>("[data-cloud-save-disabled]").forEach((button) => {
+        button.disabled = false;
+        delete button.dataset.cloudSaveDisabled;
+      });
+    }
+  }
+
+  render(getStorageStatus());
+  window.addEventListener("family-bank-storage-status", (event) => {
+    render((event as CustomEvent<StorageStatus>).detail);
+  });
+
+  document.addEventListener("click", (event) => {
+    if (getStorageMode() !== "cloud" || getStorageStatus().kind !== "saving") return;
+    const target = event.target as Element | null;
+    const button = target?.closest("button");
+    if (!button) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (message) message.textContent = "Saving your last change. Please wait…";
+  }, true);
+
+  document.addEventListener("submit", (event) => {
+    if (getStorageMode() !== "cloud" || getStorageStatus().kind !== "saving") return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (message) message.textContent = "Saving your last change. Please wait…";
+  }, true);
+</script>

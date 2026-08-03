@@ -1,3 +1,11 @@
+## Supabase Sprint S7
+
+Added atomic, revision-checked cloud persistence for every budgeting mutation, server confirmation and caching, duplicate-submit protection, and visible rollback/conflict handling.
+
+## Supabase Sprint S6
+
+Added an opt-in read-only Supabase repository, normalized family-state mapping, a confirmed cloud cache, loading/offline/empty status messaging, and explicit mutation blocking while LocalStorage remains the active writable store.
+
 ## Supabase Sprint S4
 
 Added family PIN setup, a profile chooser and lock screen, guarded parent and kid dashboards, remembered kid devices, visible lock and switch controls, and failed-attempt throttling.

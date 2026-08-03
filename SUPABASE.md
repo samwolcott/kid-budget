@@ -231,46 +231,35 @@ Acceptance criteria:
 - A child cannot reach another dashboard through normal navigation without its PIN.
 - The parent dashboard requires the parent PIN.
 
-### Sprint S5 — Explicit Local Data Import
+### Sprint S5 — Explicit Local Data Import (Removed)
 
-- [ ] Preview local balances, goals, requests, and transaction counts.
-- [ ] Create a local backup before upload.
-- [ ] Import the complete family atomically.
-- [ ] Preserve existing identifiers where practical.
-- [ ] Make import idempotent.
-- [ ] Keep LocalStorage intact and authoritative after import.
-
-Acceptance criteria:
-
-- Import failure does not alter local data.
-- Repeating an import cannot duplicate transactions or goals.
-- The parent can compare local and imported totals.
+This transitional sprint was removed by product decision. Existing LocalStorage budget data will not be uploaded. The cloud budget can begin fresh when the Supabase repository is enabled, while signed-out demo mode retains its separate local data.
 
 ### Sprint S6 — Supabase Read Path
 
-- [ ] Add a Supabase implementation of the storage repository.
-- [ ] Fetch and map the complete normalized family state.
-- [ ] Make cloud reads opt-in for the authenticated family.
-- [ ] Cache successful reads locally.
-- [ ] Add loading, cached, offline, and empty-cloud states.
-- [ ] Keep cloud writes disabled.
+- [x] Add a Supabase implementation of the storage repository.
+- [x] Fetch and map the complete normalized family state.
+- [x] Make cloud reads opt-in for the authenticated family.
+- [x] Cache successful reads locally.
+- [x] Add loading, cached, offline, and empty-cloud states.
+- [x] Keep cloud writes disabled.
 
 Acceptance criteria:
 
-- Imported data renders without changing dashboard components.
+- Cloud data renders without changing dashboard components.
 - A failed cloud read shows the last cache without corrupting it.
 - Local mode remains available as a rollback.
 
 ### Sprint S7 — Supabase Mutation Path
 
-- [ ] Persist allowance payments atomically.
-- [ ] Persist manual balance adjustments atomically.
-- [ ] Persist bucket transfers atomically.
-- [ ] Persist purchase request creation and resolution atomically.
-- [ ] Persist every goal mutation atomically.
-- [ ] Disable duplicate submissions while a save is pending.
-- [ ] Confirm and cache server state after success.
-- [ ] Roll back or mark state unsynced after failure.
+- [x] Persist allowance payments atomically.
+- [x] Persist manual balance adjustments atomically.
+- [x] Persist bucket transfers atomically.
+- [x] Persist purchase request creation and resolution atomically.
+- [x] Persist every goal mutation atomically.
+- [x] Disable duplicate submissions while a save is pending.
+- [x] Confirm and cache server state after success.
+- [x] Roll back or mark state unsynced after failure.
 
 Acceptance criteria:
 
@@ -278,30 +267,19 @@ Acceptance criteria:
 - Partial financial updates are impossible.
 - Stale revisions produce a visible conflict instead of silently overwriting data.
 
-### Sprint S8 — Offline Writes and Recovery
+### Sprint S8 — Offline Writes and Recovery (Deferred)
 
-- [ ] Add a small ordered queue for failed mutations.
-- [ ] Show pending and unsynced status clearly.
-- [ ] Retry safely when connectivity returns.
-- [ ] Prevent later mutations from overtaking earlier ones.
-- [ ] Add parent-facing conflict and retry controls.
-- [ ] Make cloud reset strongly confirmed and recoverable.
+The full ordered offline mutation queue and conflict-resolution UI are deferred. The first cloud version will cache successful reads, reject failed writes visibly, and ask the family to retry after reconnecting. This keeps failure behavior honest without adding queue complexity to the initial family app.
 
-Acceptance criteria:
-
-- An offline mutation is never silently lost.
-- Retried mutations cannot be applied twice.
-- The parent can identify and resolve a sync conflict.
-
-### Sprint S9 — Cutover and Hardening
+### Sprint S9 — Simplified Cutover and Hardening
 
 - [ ] Make Supabase the default repository for authenticated families.
 - [ ] Retain LocalStorage only for cache, recovery, and signed-out demo mode.
-- [ ] Remove transitional import and dual-mode code that is no longer needed.
+- [ ] Remove the temporary read-only preview toggle.
 - [ ] Test every mutation under network failure.
 - [ ] Test Row Level Security with unrelated families.
 - [ ] Verify the built assets contain no privileged credentials.
-- [ ] Document setup, migrations, backup, rollback, and recovery here.
+- [ ] Document setup, migrations, rollback, retry, and recovery here.
 
 Acceptance criteria:
 
@@ -312,6 +290,7 @@ Acceptance criteria:
 
 ## Future Work
 
+- Full offline write queue and conflict recovery
 - Realtime subscriptions
 - Notifications
 - Multiple parents
