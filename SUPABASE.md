@@ -138,6 +138,33 @@ Move any remaining direct page mutations into the storage/domain boundary before
 - Use revisions or another optimistic-concurrency mechanism to detect stale writes.
 - Defer Realtime and general websocket synchronization.
 
+## Foundation Setup
+
+The browser client reads these optional public variables:
+
+```text
+PUBLIC_SUPABASE_URL=
+PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+```
+
+Copy `.env.example` to `.env` for local development. Never add a database password or service-role key to a browser environment variable.
+
+The version-controlled Supabase project is in `supabase/`:
+
+- `migrations/` contains the schema, RLS policies, grants, and atomic functions.
+- `tests/database/` contains the family-isolation pgTAP test.
+- `config.toml` keeps unused Realtime, Storage, and seed services disabled.
+
+With Docker running, validate locally before deployment:
+
+```sh
+npx supabase start
+npx supabase test db
+npx supabase db lint
+```
+
+The connected GitHub integration can deploy migrations from `main`. Alternatively, authenticate the CLI, link the project, and run `npx supabase db push`. Do not reproduce migrations manually in the dashboard because that bypasses migration history.
+
 ## Migration Sprints
 
 Implement exactly one unchecked sprint at a time. Every sprint must leave the application working and include proportionate verification.
@@ -160,12 +187,12 @@ Acceptance criteria:
 
 ### Sprint S2 — Supabase Foundation
 
-- [ ] Add the Supabase browser client and documented public environment variables.
-- [ ] Add version-controlled SQL migrations for the approved schema.
-- [ ] Enable Row Level Security on every exposed table.
-- [ ] Add parent ownership policies based on `auth.uid()`.
-- [ ] Add atomic database functions needed by multi-record mutations.
-- [ ] Keep LocalStorage as the active application repository.
+- [x] Add the Supabase browser client and documented public environment variables.
+- [x] Add version-controlled SQL migrations for the approved schema.
+- [x] Enable Row Level Security on every exposed table.
+- [x] Add parent ownership policies based on `auth.uid()`.
+- [x] Add atomic database functions needed by multi-record mutations.
+- [x] Keep LocalStorage as the active application repository.
 
 Acceptance criteria:
 

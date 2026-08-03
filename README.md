@@ -41,3 +41,18 @@ All commands are run from the root of the project, from a terminal:
 ## 👀 Want to learn more?
 
 Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+
+## Supabase foundation
+
+The application remains LocalStorage-backed while the Supabase migration is in progress. Supabase configuration is optional until cloud reads are enabled.
+
+To prepare a local environment, copy `.env.example` to `.env` and provide only:
+
+```text
+PUBLIC_SUPABASE_URL=
+PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+```
+
+Both browser-safe values are available from the Supabase project Connect dialog. Never place a database password or service-role key in a `PUBLIC_*` variable or commit it to the repository.
+
+Database changes live in `supabase/migrations/`. Apply them through the connected Supabase GitHub deployment or the Supabase CLI; do not recreate the schema manually in the dashboard.

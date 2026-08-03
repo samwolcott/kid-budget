@@ -1,3 +1,7 @@
+## Supabase Sprint S2
+
+Added the optional Supabase browser client, normalized database migrations, parent-isolated RLS policies, atomic financial functions, and database security tests while keeping LocalStorage active.
+
 ## Supabase Sprint S1
 
 Added an asynchronous LocalStorage repository boundary and centralized purchase request resolution without changing application behavior.
