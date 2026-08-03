@@ -15,10 +15,10 @@
 ## Next
 
 - [x] Better parent dashboard
-- [ ] Savings overview
-- [ ] Empty states
-- [ ] Better history
-- [ ] Confetti
+- [x] Savings overview
+- [x] Empty states
+- [x] Better history
+- [x] Confetti
 - [ ] PWA
 
 ## Someday

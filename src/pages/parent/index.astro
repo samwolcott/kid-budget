@@ -111,6 +111,24 @@ const demoJson = JSON.stringify(demoKids);
       </div>
     </section>
 
+    <section class="mt-10" aria-labelledby="savings-heading">
+      <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-emerald-600">
+        Saving
+      </p>
+
+      <div class="mt-1 flex flex-wrap items-end justify-between gap-3">
+        <h2 id="savings-heading" class="text-2xl font-black">
+          Savings overview
+        </h2>
+
+        <p id="family-savings-summary" class="text-sm font-bold text-emerald-700">
+          $0.00 available
+        </p>
+      </div>
+
+      <div id="savings-overview" class="mt-4 grid gap-4 sm:grid-cols-2"></div>
+    </section>
+
     <section class="mt-10">
       <div class="flex items-end justify-between">
         <div>
@@ -332,6 +350,58 @@ const demoJson = JSON.stringify(demoKids);
     </form>
   </dialog>
 
+  <dialog
+    id="balance-dialog"
+    class="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl bg-white p-0 shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
+  >
+    <form id="balance-form" class="p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">
+            Parent adjustment
+          </p>
+          <h2 id="balance-dialog-title" class="mt-1 text-2xl font-black">
+            Set balances
+          </h2>
+          <p class="mt-2 text-sm leading-6 text-slate-500">
+            Enter the amount that should be in each bucket.
+          </p>
+        </div>
+        <button id="close-balance-dialog" type="button" class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200" aria-label="Close">×</button>
+      </div>
+
+      <div class="mt-6 grid gap-3">
+        <label class="rounded-2xl bg-blue-50 p-4 text-sm font-bold text-blue-700 ring-1 ring-blue-100">
+          Spending
+          <span class="mt-2 flex items-center rounded-xl border border-blue-200 bg-white px-3">
+            <span class="text-slate-400">$</span>
+            <input name="spending" type="number" min="0" step="0.01" inputmode="decimal" required class="min-w-0 w-full bg-transparent px-2 py-2 font-bold text-slate-900 outline-none" />
+          </span>
+        </label>
+        <label class="rounded-2xl bg-emerald-50 p-4 text-sm font-bold text-emerald-700 ring-1 ring-emerald-100">
+          Saving
+          <span class="mt-2 flex items-center rounded-xl border border-emerald-200 bg-white px-3">
+            <span class="text-slate-400">$</span>
+            <input name="saving" type="number" min="0" step="0.01" inputmode="decimal" required class="min-w-0 w-full bg-transparent px-2 py-2 font-bold text-slate-900 outline-none" />
+          </span>
+        </label>
+        <label class="rounded-2xl bg-amber-50 p-4 text-sm font-bold text-amber-700 ring-1 ring-amber-100">
+          Giving
+          <span class="mt-2 flex items-center rounded-xl border border-amber-200 bg-white px-3">
+            <span class="text-slate-400">$</span>
+            <input name="giving" type="number" min="0" step="0.01" inputmode="decimal" required class="min-w-0 w-full bg-transparent px-2 py-2 font-bold text-slate-900 outline-none" />
+          </span>
+        </label>
+      </div>
+
+      <input id="balance-kid-slug" name="slug" type="hidden" />
+      <p id="balance-error" class="mt-4 hidden rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700"></p>
+      <button type="submit" class="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700">
+        Save Balances
+      </button>
+    </form>
+  </dialog>
+
   <div
     id="toast"
     class="pointer-events-none fixed bottom-5 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 translate-y-5 rounded-2xl bg-slate-950 px-5 py-4 text-center text-sm font-bold text-white opacity-0 shadow-2xl transition-all duration-200"
@@ -355,6 +425,7 @@ const demoJson = JSON.stringify(demoKids);
       payAllowance,
       resetState,
       saveState,
+      setBucketBalances,
       type AllowancePayment,
       type AllowanceSplit,
     } from "../../lib/store";
@@ -464,6 +535,13 @@ const demoJson = JSON.stringify(demoKids);
 
     const toast =
       document.querySelector("#toast");
+
+    const balanceDialog = document.querySelector("#balance-dialog");
+    const balanceForm = document.querySelector("#balance-form");
+    const balanceDialogTitle = document.querySelector("#balance-dialog-title");
+    const balanceKidSlug = document.querySelector("#balance-kid-slug");
+    const balanceError = document.querySelector("#balance-error");
+    const closeBalanceDialog = document.querySelector("#close-balance-dialog");
 
     let toastTimeout:
       | number
@@ -882,13 +960,23 @@ const demoJson = JSON.stringify(demoKids);
         "#overview-request-count",
       );
 
+      const familySavingsSummary = document.querySelector(
+        "#family-savings-summary",
+      );
+
+      const savingsOverview = document.querySelector(
+        "#savings-overview",
+      );
+
       if (
         !(requestList instanceof HTMLElement) ||
         !(requestCount instanceof HTMLElement) ||
         !(kidList instanceof HTMLElement) ||
         !(familyBalance instanceof HTMLElement) ||
         !(kidCount instanceof HTMLElement) ||
-        !(overviewRequestCount instanceof HTMLElement)
+        !(overviewRequestCount instanceof HTMLElement) ||
+        !(familySavingsSummary instanceof HTMLElement) ||
+        !(savingsOverview instanceof HTMLElement)
       ) {
         return;
       }
@@ -916,6 +1004,87 @@ const demoJson = JSON.stringify(demoKids);
       kidCount.textContent = `${kids.length}`;
       overviewRequestCount.textContent =
         `${pending.length} ${pending.length === 1 ? "request" : "requests"}`;
+
+      const familyAllocatedSavings = kids.reduce(
+        (total, kid) => total + kid.goals.reduce(
+          (kidTotal, goal) => kidTotal + goal.saved,
+          0,
+        ),
+        0,
+      );
+      const familySavings = kids.reduce(
+        (total, kid) => total + kid.buckets.saving,
+        0,
+      );
+      const familyAvailableSavings = Math.max(
+        0,
+        familySavings - familyAllocatedSavings,
+      );
+
+      familySavingsSummary.textContent =
+        `${money.format(familyAvailableSavings)} available · ${money.format(familyAllocatedSavings)} in goals`;
+
+      savingsOverview.innerHTML = kids
+        .map((kid) => {
+          const allocated = kid.goals.reduce(
+            (total, goal) => total + goal.saved,
+            0,
+          );
+          const available = Math.max(
+            0,
+            kid.buckets.saving - allocated,
+          );
+          const goals = kid.goals.length > 0
+            ? kid.goals.map((goal) => {
+                const percent = goal.target > 0
+                  ? Math.min(100, Math.max(0, (goal.saved / goal.target) * 100))
+                  : 0;
+
+                return `
+                  <div class="border-t border-slate-100 pt-4 first:border-0 first:pt-0">
+                    <div class="flex items-center justify-between gap-3 text-sm">
+                      <span class="min-w-0 truncate font-bold text-slate-800">
+                        ${goal.emoji} ${goal.name}
+                      </span>
+                      <span class="shrink-0 text-slate-500">
+                        ${money.format(goal.saved)} / ${money.format(goal.target)}
+                      </span>
+                    </div>
+                    <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="${goal.name} savings progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(percent)}">
+                      <div class="h-full rounded-full bg-emerald-500" style="width: ${percent}%"></div>
+                    </div>
+                  </div>
+                `;
+              }).join("")
+            : `
+                <div class="rounded-2xl bg-emerald-50 p-4 text-center ring-1 ring-emerald-100">
+                  <div class="text-2xl" aria-hidden="true">🌱</div>
+                  <p class="mt-2 text-sm font-bold text-emerald-900">No goals yet</p>
+                  <p class="mt-1 text-xs leading-5 text-emerald-700">Goals created from this kid's account will appear here.</p>
+                </div>
+              `;
+
+          return `
+            <article class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
+              <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                  <span class="text-3xl" aria-hidden="true">${kid.emoji}</span>
+                  <div>
+                    <h3 class="text-lg font-black">${kid.name}</h3>
+                    <p class="text-sm text-slate-500">${money.format(kid.buckets.saving)} total Saving</p>
+                  </div>
+                </div>
+                <span class="rounded-full bg-emerald-50 px-3 py-1 text-sm font-bold text-emerald-700">
+                  ${money.format(available)} available
+                </span>
+              </div>
+              <div class="mt-5 grid gap-4">
+                ${goals}
+              </div>
+            </article>
+          `;
+        })
+        .join("");
 
       requestList.innerHTML =
         pending.length > 0
@@ -960,8 +1129,12 @@ const demoJson = JSON.stringify(demoKids);
               )
               .join("")
           : `
-              <div class="rounded-2xl bg-white p-8 text-center text-slate-500 ring-1 ring-slate-200">
-                Nothing waiting for approval. 👍
+              <div class="rounded-2xl bg-white p-8 text-center ring-1 ring-slate-200">
+                <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-3xl" aria-hidden="true">👍</div>
+                <h3 class="mt-4 font-black text-slate-900">You're all caught up</h3>
+                <p class="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
+                  New purchase requests from Judah or Max will appear here.
+                </p>
               </div>
             `;
 
@@ -974,10 +1147,7 @@ const demoJson = JSON.stringify(demoKids);
               kid.buckets.giving;
 
             return `
-              <a
-                href="${import.meta.env.BASE_URL}kids/${kid.slug}/"
-                class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
-              >
+              <article class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                 <div class="flex items-center gap-3">
                   <span class="text-3xl">
                     ${kid.emoji}
@@ -1016,14 +1186,61 @@ const demoJson = JSON.stringify(demoKids);
                     ${money.format(kid.allowanceAmount)} allowance
                   </span>
 
-                  <span class="font-bold text-blue-600">
-                    Open account →
-                  </span>
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      data-set-balances="${kid.slug}"
+                      class="rounded-lg bg-slate-100 px-3 py-2 font-bold text-slate-700 transition hover:bg-slate-200"
+                    >
+                      Set balances
+                    </button>
+
+                    <a
+                      href="${import.meta.env.BASE_URL}kids/${kid.slug}/"
+                      class="rounded-lg px-3 py-2 font-bold text-blue-600 transition hover:bg-blue-50"
+                    >
+                      Open →
+                    </a>
+                  </div>
                 </div>
-              </a>
+              </article>
             `;
           })
           .join("");
+
+      document
+        .querySelectorAll<HTMLElement>("[data-set-balances]")
+        .forEach((button) => {
+          button.onclick = () => {
+            const slug = button.dataset.setBalances ?? "";
+            const kid = state.kids[slug];
+
+            if (!kid || !(balanceDialog instanceof HTMLDialogElement)) return;
+
+            if (balanceDialogTitle instanceof HTMLElement) {
+              balanceDialogTitle.textContent = `Set ${kid.name}'s balances`;
+            }
+            if (balanceKidSlug instanceof HTMLInputElement) {
+              balanceKidSlug.value = kid.slug;
+            }
+            if (balanceForm instanceof HTMLFormElement) {
+              const fields = balanceForm.elements;
+              const spending = fields.namedItem("spending");
+              const saving = fields.namedItem("saving");
+              const giving = fields.namedItem("giving");
+
+              if (spending instanceof HTMLInputElement) spending.value = kid.buckets.spending.toFixed(2);
+              if (saving instanceof HTMLInputElement) saving.value = kid.buckets.saving.toFixed(2);
+              if (giving instanceof HTMLInputElement) giving.value = kid.buckets.giving.toFixed(2);
+            }
+            if (balanceError instanceof HTMLElement) {
+              balanceError.classList.add("hidden");
+              balanceError.textContent = "";
+            }
+
+            balanceDialog.showModal();
+          };
+        });
 
       document
         .querySelectorAll<HTMLElement>(
@@ -1126,6 +1343,51 @@ const demoJson = JSON.stringify(demoKids);
           };
         });
     }
+
+    closeBalanceDialog?.addEventListener("click", () => {
+      if (balanceDialog instanceof HTMLDialogElement) balanceDialog.close();
+    });
+
+    balanceDialog?.addEventListener("click", (event) => {
+      if (
+        balanceDialog instanceof HTMLDialogElement &&
+        event.target === balanceDialog
+      ) {
+        balanceDialog.close();
+      }
+    });
+
+    balanceForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      if (!(balanceForm instanceof HTMLFormElement)) return;
+
+      const data = new FormData(balanceForm);
+      const slug = String(data.get("slug") ?? "");
+
+      try {
+        setBucketBalances(state, slug, {
+          spending: Number(data.get("spending")),
+          saving: Number(data.get("saving")),
+          giving: Number(data.get("giving")),
+        });
+        saveState(state);
+        render();
+
+        if (balanceDialog instanceof HTMLDialogElement) {
+          balanceDialog.close();
+        }
+
+        showToast("Balances updated! ✏️");
+      } catch (error) {
+        if (balanceError instanceof HTMLElement) {
+          balanceError.textContent = error instanceof Error
+            ? error.message
+            : "Unable to update balances.";
+          balanceError.classList.remove("hidden");
+        }
+      }
+    });
 
     allowanceButton?.addEventListener(
       "click",

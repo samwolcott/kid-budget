@@ -27,3 +27,31 @@ button,
 a {
   -webkit-tap-highlight-color: transparent;
 }
+
+.confetti-piece {
+  position: absolute;
+  top: -1.5rem;
+  left: var(--confetti-x);
+  width: 0.65rem;
+  height: 1rem;
+  animation: confetti-fall var(--confetti-duration) ease-in var(--confetti-delay) forwards;
+  opacity: 0;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(var(--confetti-drift), 105vh, 0) rotate(var(--confetti-turn));
+    opacity: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti-piece {
+    animation: none;
+  }
+}

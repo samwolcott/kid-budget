@@ -12,6 +12,7 @@ const { transactions } = Astro.props;
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
+  year: "numeric",
 });
 
 const bucketLabels: Record<BucketType, string> = {
@@ -38,14 +39,28 @@ const recentTransactions = transactions.slice(0, 5);
 ---
 
 <section class="mt-10">
-  <div class="mb-4">
-    <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-slate-500">
-      Account history
-    </p>
+  <div class="mb-4 flex items-end justify-between gap-4">
+    <div>
+      <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-slate-500">
+        Account history
+      </p>
 
-    <h2 class="mt-1 text-2xl font-black tracking-tight text-slate-950">
-      Recent activity
-    </h2>
+      <h2 class="mt-1 text-2xl font-black tracking-tight text-slate-950">
+        Recent activity
+      </h2>
+    </div>
+
+    {
+      transactions.length > recentTransactions.length && (
+        <button
+          type="button"
+          data-view-history
+          class="inline-flex min-h-10 items-center justify-center rounded-xl bg-white px-4 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          View all
+        </button>
+      )
+    }
   </div>
 
   <Card class="overflow-hidden">
@@ -102,10 +117,10 @@ const recentTransactions = transactions.slice(0, 5);
         </div>
       ) : (
         <div class="p-8 text-center">
-          <div class="text-4xl" aria-hidden="true">📋</div>
-          <h3 class="mt-3 font-black">No activity yet</h3>
-          <p class="mt-2 text-sm text-slate-500">
-            Allowance payments and purchases will appear here.
+          <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-3xl" aria-hidden="true">📋</div>
+          <h3 class="mt-4 font-black">Your money story starts here</h3>
+          <p class="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
+            Allowance, purchases, transfers, and goal activity will appear here.
           </p>
         </div>
       )

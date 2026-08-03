@@ -77,7 +77,7 @@ export const kids: Record<string, Kid> = {
     slug: "max",
     name: "Max",
     emoji: "🤘",
-    allowanceAmount: 15,
+    allowanceAmount: 20,
     buckets: {
       spending: 18,
       saving: 10,

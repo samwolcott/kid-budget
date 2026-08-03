@@ -1,5 +1,6 @@
 import type {
   BucketType,
+  BucketBalances,
   FamilyBankState,
   Kid,
   PurchaseRequest,
@@ -47,6 +48,14 @@ export function loadState(
       return fallback;
     }
 
+    Object.entries(parsed.kids).forEach(([slug, kid]) => {
+      const configuredKid = fallbackKids[slug];
+
+      if (configuredKid) {
+        kid.allowanceAmount = configuredKid.allowanceAmount;
+      }
+    });
+
     return parsed;
   } catch {
     return fallback;
@@ -64,6 +73,69 @@ export function saveState(
 
 export function resetState(): void {
   localStorage.removeItem(STORAGE_KEY);
+}
+
+export function setBucketBalances(
+  state: FamilyBankState,
+  slug: string,
+  balances: BucketBalances,
+): void {
+  const kid = state.kids[slug];
+
+  if (!kid) {
+    throw new Error("Kid account not found.");
+  }
+
+  const bucketTypes: BucketType[] = [
+    "spending",
+    "saving",
+    "giving",
+  ];
+
+  for (const bucket of bucketTypes) {
+    if (
+      !Number.isFinite(balances[bucket]) ||
+      balances[bucket] < 0
+    ) {
+      throw new Error("Enter a balance of $0 or more for every bucket.");
+    }
+  }
+
+  const nextBalances: BucketBalances = {
+    spending: roundCurrency(balances.spending),
+    saving: roundCurrency(balances.saving),
+    giving: roundCurrency(balances.giving),
+  };
+  const allocatedSavings = kid.goals.reduce(
+    (total, goal) => total + goal.saved,
+    0,
+  );
+
+  if (nextBalances.saving < allocatedSavings) {
+    throw new Error(
+      `Saving must be at least $${allocatedSavings.toFixed(2)} because that money is already allocated to goals.`,
+    );
+  }
+
+  const adjustments = bucketTypes.flatMap((bucket) => {
+    const difference = roundCurrency(
+      nextBalances[bucket] - kid.buckets[bucket],
+    );
+
+    if (difference === 0) return [];
+
+    return [{
+      id: crypto.randomUUID(),
+      date: today(),
+      description: `Balance set — ${bucket[0].toUpperCase()}${bucket.slice(1)}`,
+      amount: difference,
+      bucket,
+      type: "adjustment" as const,
+    }];
+  });
+
+  kid.buckets = nextBalances;
+  kid.transactions.unshift(...adjustments);
 }
 
 export function payAllowance(
