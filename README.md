@@ -63,14 +63,18 @@ Parent authentication uses Supabase email and password accounts. In Supabase, ke
 
 ```text
 http://localhost:4321/parent/
+http://localhost:4321/reset-password/
 https://samwolcott.github.io/kid-budget/parent/
+https://samwolcott.github.io/kid-budget/reset-password/
 ```
 
 Signing in creates or restores the parent's shared family account. Every budgeting change is saved atomically with a revision check, confirmed from Supabase, and cached locally.
 
 After signing in, the home page asks the parent to create separate four-digit PINs for Parent, Judah, and Max. PIN verifiers are stored in Supabase; only a temporary profile unlock is stored in browser session storage. A kid device can optionally remember Judah or Max and open directly to that child's PIN screen.
 
-If a write fails, reload the page and submit the intended change again after the latest family state loads. A stale device is never allowed to overwrite a newer revision. Storage and synchronization details are written to the browser console for troubleshooting. The last confirmed cloud cache is kept under `family-bank-cloud-cache-v1`; never edit it manually.
+The Parent Dashboard can email a password reset link. Add both reset-password URLs above to Supabase **Authentication → URL Configuration → Redirect URLs** before testing that flow. Family PINs can be changed from the signed-in Parent Dashboard; a forgotten parent PIN can be reset from the PIN screen after confirming the parent account password.
+
+If the authenticated family account cannot load, changes are blocked rather than saved into separate local demo data. If a write fails, reload the page and submit the intended change again after the latest family state loads. A stale device is never allowed to overwrite a newer revision. Storage and synchronization details are written to the browser console for troubleshooting. The last confirmed cloud cache is kept under `family-bank-cloud-cache-v1`; never edit it manually.
 
 ## Install on a Device
 

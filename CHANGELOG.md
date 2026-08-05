@@ -1,3 +1,7 @@
+## Family Readiness Polish
+
+Added parent password and family PIN recovery, blocked local writes when an authenticated cloud account cannot load, protected Available Saving during purchases, escaped family-entered dashboard text, refreshed account wording, and required tests before deployment.
+
 ## PWA Sprint
 
 Added optional home-screen installation, branded app icons, standalone display metadata, and a cached application shell without enabling offline financial writes.

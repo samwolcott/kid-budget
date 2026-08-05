@@ -417,6 +417,7 @@ const demoJson = JSON.stringify(demoKids);
     import type {
       Kid,
     } from "../../types";
+    import { escapeHtml } from "../../lib/html";
 
     import {
       createFallbackState,
@@ -666,18 +667,18 @@ const demoJson = JSON.stringify(demoKids);
                 <input
                   type="checkbox"
                   name="kid"
-                  value="${kid.slug}"
+                  value="${escapeHtml(kid.slug)}"
                   checked
                   class="h-5 w-5 accent-emerald-600"
                 />
 
                 <span class="text-2xl">
-                  ${kid.emoji}
+                  ${escapeHtml(kid.emoji)}
                 </span>
 
                 <span class="min-w-0">
                   <strong class="block">
-                    ${kid.name}
+                    ${escapeHtml(kid.name)}
                   </strong>
 
                   <span class="text-sm text-slate-500 sm:hidden">
@@ -700,7 +701,7 @@ const demoJson = JSON.stringify(demoKids);
                       min="0"
                       step="0.01"
                       inputmode="decimal"
-                      name="amount-${kid.slug}"
+                      name="amount-${escapeHtml(kid.slug)}"
                       value="${kid.allowanceAmount.toFixed(2)}"
                       class="min-w-0 w-full bg-transparent px-2 py-2 font-bold outline-none"
                     />
@@ -864,11 +865,11 @@ const demoJson = JSON.stringify(demoKids);
                       <div class="flex items-center justify-between gap-3">
                         <div class="flex items-center gap-2">
                           <span class="text-xl">
-                            ${kid.emoji}
+                            ${escapeHtml(kid.emoji)}
                           </span>
 
                           <strong>
-                            ${kid.name}
+                            ${escapeHtml(kid.name)}
                           </strong>
                         </div>
 
@@ -1025,13 +1026,13 @@ const demoJson = JSON.stringify(demoKids);
                   <div class="border-t border-slate-100 pt-4 first:border-0 first:pt-0">
                     <div class="flex items-center justify-between gap-3 text-sm">
                       <span class="min-w-0 truncate font-bold text-slate-800">
-                        ${goal.emoji} ${goal.name}
+                        ${escapeHtml(goal.emoji)} ${escapeHtml(goal.name)}
                       </span>
                       <span class="shrink-0 text-slate-500">
                         ${money.format(goal.saved)} / ${money.format(goal.target)}
                       </span>
                     </div>
-                    <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="${goal.name} savings progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(percent)}">
+                    <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="${escapeHtml(goal.name)} savings progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(percent)}">
                       <div class="h-full rounded-full bg-emerald-500" style="width: ${percent}%"></div>
                     </div>
                   </div>
@@ -1049,9 +1050,9 @@ const demoJson = JSON.stringify(demoKids);
             <article class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
               <div class="flex items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                  <span class="text-3xl" aria-hidden="true">${kid.emoji}</span>
+                  <span class="text-3xl" aria-hidden="true">${escapeHtml(kid.emoji)}</span>
                   <div>
-                    <h3 class="text-lg font-black">${kid.name}</h3>
+                    <h3 class="text-lg font-black">${escapeHtml(kid.name)}</h3>
                     <p class="text-sm text-slate-500">${money.format(kid.buckets.saving)} total Saving</p>
                   </div>
                 </div>
@@ -1076,29 +1077,29 @@ const demoJson = JSON.stringify(demoKids);
                     <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                       <div>
                         <p class="text-sm font-bold text-slate-500">
-                          ${request.kidName} wants to record
+                          ${escapeHtml(request.kidName)} wants to record
                         </p>
 
                         <h3 class="mt-1 text-lg font-black">
-                          ${request.description}
+                          ${escapeHtml(request.description)}
                         </h3>
 
                         <p class="mt-1 text-sm capitalize text-slate-500">
                           ${money.format(request.amount)}
-                          from ${request.bucket}
+                          from ${escapeHtml(request.bucket)}
                         </p>
                       </div>
 
                       <div class="flex gap-2">
                         <button
-                          data-decline="${request.id}"
+                          data-decline="${escapeHtml(request.id)}"
                           class="rounded-xl bg-red-50 px-4 py-3 font-bold text-red-700"
                         >
                           Decline
                         </button>
 
                         <button
-                          data-approve="${request.id}"
+                          data-approve="${escapeHtml(request.id)}"
                           class="rounded-xl bg-emerald-600 px-4 py-3 font-bold text-white"
                         >
                           Approve
@@ -1131,12 +1132,12 @@ const demoJson = JSON.stringify(demoKids);
               <article class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                 <div class="flex items-center gap-3">
                   <span class="text-3xl">
-                    ${kid.emoji}
+                    ${escapeHtml(kid.emoji)}
                   </span>
 
                   <div>
                     <h3 class="text-xl font-black">
-                      ${kid.name}
+                      ${escapeHtml(kid.name)}
                     </h3>
 
                     <p class="text-sm text-slate-500">
@@ -1170,7 +1171,7 @@ const demoJson = JSON.stringify(demoKids);
                   <div class="flex items-center gap-2">
                     <button
                       type="button"
-                      data-set-balances="${kid.slug}"
+                      data-set-balances="${escapeHtml(kid.slug)}"
                       class="rounded-lg bg-slate-100 px-3 py-2 font-bold text-slate-700 transition hover:bg-slate-200"
                     >
                       Set balances

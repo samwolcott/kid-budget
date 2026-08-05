@@ -144,6 +144,8 @@ Authenticated families use Supabase automatically. An unconfigured or signed-out
 
 Every write is atomic and revision-checked. While a write is pending, mutation buttons are disabled. After success, the application reads the server state back and caches that confirmed revision. If a write fails or another device has a newer revision, use **Reload & Retry** before submitting the intended change again. Failed changes are not queued or silently replayed.
 
+If an authenticated family cannot be loaded and no confirmed cache exists, the repository becomes unavailable and rejects changes. It must never fall back to writable local demo data. Parent password recovery returns through `/reset-password/`, which must be included in the project's allowed Auth redirect URLs.
+
 The last confirmed family snapshot is cached under `family-bank-cloud-cache-v1` and is scoped to the authenticated family. Storage and synchronization details are logged to the browser console. Do not edit the cache manually.
 
 Deploy database changes only from `supabase/migrations/` using the connected GitHub integration or `npx supabase db push`. Never rewrite migration history or reproduce migrations manually in the SQL editor. Before a schema release, run the pgTAP family-isolation test and database lint with Docker available. The rollback for a schema change must be a new forward migration; do not delete an applied migration.

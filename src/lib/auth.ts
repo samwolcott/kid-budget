@@ -80,6 +80,27 @@ export async function signOutParent(
   if (error) throw new Error(error.message);
 }
 
+export async function requestParentPasswordReset(
+  client: SupabaseClient,
+  email: string,
+  redirectTo: string,
+): Promise<void> {
+  const { error } = await client.auth.resetPasswordForEmail(email, {
+    redirectTo,
+  });
+
+  if (error) throw new Error(error.message);
+}
+
+export async function updateParentPassword(
+  client: SupabaseClient,
+  password: string,
+): Promise<void> {
+  const { error } = await client.auth.updateUser({ password });
+
+  if (error) throw new Error(error.message);
+}
+
 async function loadOrCreateFamily(
   client: SupabaseClient,
   user: User,

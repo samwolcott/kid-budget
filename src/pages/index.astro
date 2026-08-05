@@ -80,6 +80,7 @@ import Layout from "../layouts/Layout.astro";
         <label id="remember-device-label" class="mx-auto mt-4 hidden w-fit items-center gap-2 text-sm font-bold text-slate-600"><input name="remember" type="checkbox" class="h-4 w-4 accent-blue-600" /> Remember this kid on this device</label>
         <p id="pin-error" class="mt-4 hidden rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700"></p>
         <button id="unlock-button" type="submit" class="mt-5 w-full rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60">Unlock</button>
+        <button id="forgot-pin-button" type="button" class="mt-3 hidden w-full px-4 py-2 text-sm font-bold text-blue-600 hover:text-blue-700">Forgot the parent PIN?</button>
       </form>
     </section>
   </main>
@@ -112,6 +113,7 @@ import Layout from "../layouts/Layout.astro";
   const rememberLabel = document.querySelector<HTMLElement>("#remember-device-label");
   const pinInput = document.querySelector<HTMLInputElement>("#profile-pin");
   const unlockButton = document.querySelector<HTMLButtonElement>("#unlock-button");
+  const forgotPinButton = document.querySelector<HTMLButtonElement>("#forgot-pin-button");
   const client = getSupabaseClient();
   const baseUrl = home?.dataset.baseUrl ?? "/";
   const profileDetails = {
@@ -158,6 +160,7 @@ import Layout from "../layouts/Layout.astro";
     if (unlockEmoji) unlockEmoji.textContent = profileDetails[profile].emoji;
     rememberLabel?.classList.toggle("hidden", profile === "parent");
     rememberLabel?.classList.toggle("flex", profile !== "parent");
+    forgotPinButton?.classList.toggle("hidden", profile !== "parent");
     unlockForm?.reset();
     const rememberInput = unlockForm?.elements.namedItem("remember");
     if (rememberInput instanceof HTMLInputElement) {
@@ -175,6 +178,10 @@ import Layout from "../layouts/Layout.astro";
   document.querySelector("#back-to-profiles")?.addEventListener("click", () => {
     window.clearInterval(cooldownTimer);
     showChooser();
+  });
+
+  forgotPinButton?.addEventListener("click", () => {
+    window.location.assign(`${baseUrl}recover-pins/`);
   });
 
   setupForm?.addEventListener("submit", async (event) => {

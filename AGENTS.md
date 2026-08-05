@@ -79,6 +79,7 @@ One sprint = one feature.
 - Shared cloud persistence
 - Signed-out local demo mode
 - Home-screen installation
+- Parent password and family PIN recovery
 
 ---
 

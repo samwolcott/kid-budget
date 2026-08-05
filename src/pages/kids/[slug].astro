@@ -518,6 +518,7 @@ const demoJson = JSON.stringify(demoKids);
       Kid,
       Transaction,
     } from "../../types";
+    import { escapeHtml } from "../../lib/html";
 
     import {
       allocateToGoal,
@@ -878,12 +879,6 @@ const demoJson = JSON.stringify(demoKids);
       const changed = name !== goal.name || target !== goal.target || emoji !== goal.emoji;
       const valid = name.length > 0 && Number.isFinite(target) && target >= goal.saved && target > 0;
       saveEditGoal.disabled = !changed || !valid;
-    }
-
-    function escapeHtml(value: string): string {
-      const element = document.createElement("div");
-      element.textContent = value;
-      return element.innerHTML;
     }
 
     function formatDate(value: string): string {
@@ -1345,8 +1340,9 @@ const demoJson = JSON.stringify(demoKids);
       const bucket = purchaseBucket.value as BucketType;
       const meta = bucketMeta[bucket];
 
+      const qualifier = bucket === "saving" ? "Available Saving" : meta.label;
       purchaseBalanceHelp.textContent =
-        `${meta.icon} ${meta.label} balance: ${money.format(currentKid.buckets[bucket])}`;
+        `${meta.icon} ${qualifier}: ${money.format(availableBucketBalance(bucket))}`;
     }
 
     function openPurchaseDialog(): void {

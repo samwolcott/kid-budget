@@ -23,12 +23,13 @@ import {
 import { setStorageStatus } from "./storageMode";
 import { getSupabaseClient } from "./supabase";
 import { runConfirmedSave } from "./cloudSaveCoordinator";
+import { availableBucketBalance } from "./balances";
 
 const stateRepository = new LocalStorageStateRepository();
 let cloudSnapshot: CloudSnapshot | null = null;
 let pendingAllowanceSplit: AllowanceSplit | null = null;
 let cloudSavePending = false;
-let activeRepository: "local" | "cloud" = "local";
+let activeRepository: "local" | "cloud" | "unavailable" = "local";
 
 function replaceState(
   target: FamilyBankState,
@@ -119,26 +120,36 @@ export async function loadState(
         return structuredClone(cloudSnapshot.state);
       }
 
-      activeRepository = "local";
+      activeRepository = "unavailable";
       setStorageStatus({
         kind: "offline",
-        message: "Cloud is unavailable and has no cache. Local demo data is shown.",
+        message: "Cloud is unavailable and has no confirmed cache.",
       });
-      return stateRepository.load(fallbackKids);
+      throw new Error(
+        "We couldn't load the family account. Reconnect and reload before making changes.",
+      );
     }
   } catch {
-    activeRepository = "local";
+    activeRepository = "unavailable";
     setStorageStatus({
       kind: "offline",
-      message: "Parent session could not be restored. Local demo data is shown.",
+      message: "The parent session or family account could not be restored.",
     });
-    return stateRepository.load(fallbackKids);
+    throw new Error(
+      "We couldn't load the family account. Reconnect and reload before making changes.",
+    );
   }
 }
 
 export async function saveState(
   state: FamilyBankState,
 ): Promise<void> {
+  if (activeRepository === "unavailable") {
+    throw new Error(
+      "The family account is unavailable. Reconnect and reload before making changes.",
+    );
+  }
+
   if (activeRepository === "cloud") {
     if (cloudSavePending) {
       throw new Error("A cloud save is already in progress.");
@@ -234,6 +245,12 @@ export async function loadAllowanceSplit(
 export async function saveAllowanceSplit(
   split: AllowanceSplit,
 ): Promise<void> {
+  if (activeRepository === "unavailable") {
+    throw new Error(
+      "The family account is unavailable. Reconnect and reload before making changes.",
+    );
+  }
+
   if (activeRepository === "cloud") {
     pendingAllowanceSplit = structuredClone(split);
     return;
@@ -500,9 +517,13 @@ export function createPurchaseRequest(
     );
   }
 
-  if (kid.buckets[bucket] < amount) {
+  const availableBalance = roundCurrency(
+    availableBucketBalance(kid, bucket),
+  );
+
+  if (availableBalance < amount) {
     throw new Error(
-      `There isn't enough money in ${bucket}.`,
+      `There isn't enough available money in ${bucket}.`,
     );
   }
 
@@ -552,9 +573,13 @@ export function resolvePurchaseRequest(
     throw new Error("Kid account not found.");
   }
 
-  if (kid.buckets[request.bucket] < request.amount) {
+  const availableBalance = roundCurrency(
+    availableBucketBalance(kid, request.bucket),
+  );
+
+  if (availableBalance < request.amount) {
     throw new Error(
-      "That bucket no longer has enough money.",
+      "That bucket no longer has enough available money.",
     );
   }
 

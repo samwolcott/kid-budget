@@ -29,7 +29,7 @@
       <div>
         <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">Parent account</p>
         <h2 class="mt-1 text-xl font-black">Sign in once on this device</h2>
-        <p class="mt-2 text-sm leading-6 text-slate-500">Your budget stays in local demo mode for now. Signing in prepares this device for family sync later.</p>
+        <p class="mt-2 text-sm leading-6 text-slate-500">Sign in to use the same family balances on every household device.</p>
       </div>
     </div>
 
@@ -47,6 +47,7 @@
       <div class="flex flex-wrap gap-3 sm:col-span-2">
         <button data-auth-action="sign-in" type="submit" class="rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60">Sign In</button>
         <button data-auth-action="create" type="button" class="rounded-xl bg-white px-5 py-3 font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60">Create Parent Account</button>
+        <button id="auth-forgot-password" type="button" class="px-2 py-3 text-sm font-bold text-blue-600 transition hover:text-blue-700 disabled:cursor-wait disabled:opacity-60">Forgot password?</button>
       </div>
     </form>
   </div>
@@ -58,10 +59,13 @@
         <div>
           <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-emerald-600">Parent signed in</p>
           <h2 id="auth-family-name" class="mt-1 text-xl font-black">The Family Bank</h2>
-          <p class="mt-1 text-sm text-slate-500"><span id="auth-email"></span> · Budget data still saves on this device.</p>
+          <p class="mt-1 text-sm text-slate-500"><span id="auth-email"></span> · Family balances stay synced across devices.</p>
         </div>
       </div>
-      <button id="auth-sign-out" type="button" class="rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60">Sign Out</button>
+      <div class="flex flex-wrap gap-2">
+        <a href={`${import.meta.env.BASE_URL}recover-pins/`} class="rounded-xl bg-white px-4 py-3 text-sm font-bold text-blue-600 ring-1 ring-slate-200 transition hover:bg-slate-50">Change PINs</a>
+        <button id="auth-sign-out" type="button" class="rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60">Sign Out</button>
+      </div>
     </div>
   </div>
 </section>
@@ -70,6 +74,7 @@
   import {
     createParentAccount,
     loadParentAccount,
+    requestParentPasswordReset,
     signInParent,
     signOutParent,
     type ParentAccount,
@@ -89,6 +94,8 @@
   const email = document.querySelector<HTMLElement>("#auth-email");
   const signOutButton = document.querySelector<HTMLButtonElement>("#auth-sign-out");
   const createButton = document.querySelector<HTMLButtonElement>("[data-auth-action='create']");
+  const forgotPasswordButton = document.querySelector<HTMLButtonElement>("#auth-forgot-password");
+  const emailInput = form?.elements.namedItem("email");
   const client = getSupabaseClient();
 
   function show(view: HTMLElement | null): void {
@@ -156,6 +163,36 @@
   });
 
   createButton?.addEventListener("click", () => void submit("create"));
+
+  forgotPasswordButton?.addEventListener("click", async () => {
+    if (!client || !(emailInput instanceof HTMLInputElement)) return;
+
+    if (!emailInput.value.trim() || !emailInput.checkValidity()) {
+      showError("Enter your parent email first, then choose Forgot password.");
+      emailInput.focus();
+      return;
+    }
+
+    error?.classList.add("hidden");
+    message?.classList.add("hidden");
+    setBusy(true);
+
+    try {
+      const redirectTo = new URL(
+        `${accountPanel?.dataset.baseUrl ?? "/"}reset-password/`,
+        window.location.origin,
+      ).href;
+      await requestParentPasswordReset(client, emailInput.value.trim(), redirectTo);
+      if (message) {
+        message.textContent = "Check your email for a password reset link.";
+        message.classList.remove("hidden");
+      }
+    } catch (caught) {
+      showError(caught instanceof Error ? caught.message : "Unable to send the password reset email.");
+    } finally {
+      setBusy(false);
+    }
+  });
 
   signOutButton?.addEventListener("click", async () => {
     if (!client) return;

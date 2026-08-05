@@ -1,0 +1,116 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Reset Family PINs | The Family Bank">
+  <main id="pin-recovery-page" data-base-url={import.meta.env.BASE_URL} class="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center px-5 py-10">
+    <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+      <a href={import.meta.env.BASE_URL} class="text-sm font-bold text-slate-500">← The Family Bank</a>
+      <div class="mt-6 text-center">
+        <div class="text-5xl" aria-hidden="true">🔐</div>
+        <p class="mt-5 text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">Parent recovery</p>
+        <h1 class="mt-1 text-3xl font-black">Reset family PINs</h1>
+        <p class="mt-2 text-sm leading-6 text-slate-500">Enter the parent account password, then choose three different 4-number PINs.</p>
+      </div>
+
+      <p id="pin-recovery-loading" class="mt-6 text-center text-sm font-bold text-slate-500">Checking the parent account…</p>
+
+      <form id="pin-recovery-form" class="mt-6 hidden grid gap-4">
+        <label class="text-sm font-bold text-slate-700">Parent account password<input name="password" type="password" autocomplete="current-password" required class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" /></label>
+
+        <div class="grid gap-4">
+          {(["parent", "judah", "max"] as const).map((profile) => (
+            <fieldset class="grid grid-cols-2 gap-3 rounded-2xl bg-slate-50 p-4">
+              <legend class="px-1 text-sm font-black capitalize text-slate-800">{profile}</legend>
+              <label class="text-sm font-bold text-slate-700">New PIN<input name={profile} type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-center text-xl tracking-[0.3em] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" /></label>
+              <label class="text-sm font-bold text-slate-700">Confirm<input name={`${profile}Confirm`} type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-center text-xl tracking-[0.3em] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" /></label>
+            </fieldset>
+          ))}
+        </div>
+
+        <p id="pin-recovery-error" class="hidden rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700" role="alert"></p>
+        <button type="submit" class="rounded-xl bg-blue-600 px-5 py-3 font-bold text-white hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60">Save New PINs</button>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    import { loadParentAccount, signInParent } from "../lib/auth";
+    import { clearProfileUnlocks, setupProfilePins, type ProfileSlug } from "../lib/profileLock";
+    import { getSupabaseClient } from "../lib/supabase";
+
+    const page = document.querySelector<HTMLElement>("#pin-recovery-page");
+    const loading = document.querySelector<HTMLElement>("#pin-recovery-loading");
+    const form = document.querySelector<HTMLFormElement>("#pin-recovery-form");
+    const error = document.querySelector<HTMLElement>("#pin-recovery-error");
+    const client = getSupabaseClient();
+    let parentEmail = "";
+
+    function showError(message: string): void {
+      if (!error) return;
+      error.textContent = message;
+      error.classList.remove("hidden");
+    }
+
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!client || !form || !form.reportValidity()) return;
+
+      const data = new FormData(form);
+      const pins = {
+        parent: String(data.get("parent") ?? ""),
+        judah: String(data.get("judah") ?? ""),
+        max: String(data.get("max") ?? ""),
+      } satisfies Record<ProfileSlug, string>;
+
+      if ((Object.keys(pins) as ProfileSlug[]).some(
+        (profile) => pins[profile] !== data.get(`${profile}Confirm`),
+      )) {
+        showError("Each PIN must match its confirmation.");
+        return;
+      }
+
+      if (new Set(Object.values(pins)).size !== 3) {
+        showError("Choose a different PIN for each person.");
+        return;
+      }
+
+      error?.classList.add("hidden");
+      form.querySelector<HTMLButtonElement>("button")!.disabled = true;
+
+      try {
+        await signInParent(client, parentEmail, String(data.get("password") ?? ""));
+        await setupProfilePins(client, pins);
+        clearProfileUnlocks();
+        window.location.assign(`${page?.dataset.baseUrl ?? "/"}?profile=parent`);
+      } catch (caught) {
+        showError(caught instanceof Error ? caught.message : "Unable to reset the family PINs.");
+      } finally {
+        form.querySelector<HTMLButtonElement>("button")!.disabled = false;
+      }
+    });
+
+    async function initialize(): Promise<void> {
+      if (!client) {
+        if (loading) loading.textContent = "PIN recovery is unavailable on this build.";
+        return;
+      }
+
+      try {
+        const account = await loadParentAccount(client);
+        if (!account || !account.session.user.email) {
+          if (loading) loading.textContent = "Sign in from the Parent Dashboard before resetting family PINs.";
+          return;
+        }
+
+        parentEmail = account.session.user.email;
+        loading?.classList.add("hidden");
+        form?.classList.remove("hidden");
+      } catch (caught) {
+        if (loading) loading.textContent = caught instanceof Error ? caught.message : "Unable to load the parent account.";
+      }
+    }
+
+    void initialize();
+  </script>
+</Layout>

@@ -1,4 +1,4 @@
-const CACHE_NAME = "family-bank-shell-v1";
+const CACHE_NAME = "family-bank-shell-v2";
 const APP_ROUTES = ["./", "./parent/", "./kids/judah/", "./kids/max/"];
 const STATIC_FILES = [
   "./manifest.webmanifest",
