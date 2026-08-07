@@ -418,6 +418,7 @@ const demoJson = JSON.stringify(demoKids);
       Kid,
     } from "../../types";
     import { escapeHtml } from "../../lib/html";
+    import { profileAvatarHtml } from "../../lib/profileAvatar";
 
     import {
       createFallbackState,
@@ -672,9 +673,7 @@ const demoJson = JSON.stringify(demoKids);
                   class="h-5 w-5 accent-emerald-600"
                 />
 
-                <span class="text-2xl">
-                  ${escapeHtml(kid.emoji)}
-                </span>
+                ${profileAvatarHtml(kid.slug as "judah" | "max", "small")}
 
                 <span class="min-w-0">
                   <strong class="block">
@@ -864,9 +863,7 @@ const demoJson = JSON.stringify(demoKids);
                     <div class="p-4">
                       <div class="flex items-center justify-between gap-3">
                         <div class="flex items-center gap-2">
-                          <span class="text-xl">
-                            ${escapeHtml(kid.emoji)}
-                          </span>
+                          ${profileAvatarHtml(kid.slug as "judah" | "max", "small")}
 
                           <strong>
                             ${escapeHtml(kid.name)}
@@ -1050,7 +1047,7 @@ const demoJson = JSON.stringify(demoKids);
             <article class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
               <div class="flex items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                  <span class="text-3xl" aria-hidden="true">${escapeHtml(kid.emoji)}</span>
+                  ${profileAvatarHtml(kid.slug as "judah" | "max")}
                   <div>
                     <h3 class="text-lg font-black">${escapeHtml(kid.name)}</h3>
                     <p class="text-sm text-slate-500">${money.format(kid.buckets.saving)} total Saving</p>
@@ -1131,9 +1128,7 @@ const demoJson = JSON.stringify(demoKids);
             return `
               <article class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                 <div class="flex items-center gap-3">
-                  <span class="text-3xl">
-                    ${escapeHtml(kid.emoji)}
-                  </span>
+                  ${profileAvatarHtml(kid.slug as "judah" | "max")}
 
                   <div>
                     <h3 class="text-xl font-black">

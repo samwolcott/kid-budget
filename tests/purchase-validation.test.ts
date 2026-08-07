@@ -8,7 +8,7 @@ function kid(): Kid {
     id: "kid-max",
     slug: "max",
     name: "Max",
-    emoji: "🤘",
+    emoji: "M",
     allowanceAmount: 20,
     buckets: { spending: 10, saving: 20, giving: 5 },
     goals: [{ id: "goal", name: "Cards", emoji: "⚡", saved: 15, target: 25 }],

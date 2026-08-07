@@ -5,7 +5,7 @@ export const kids: Record<string, Kid> = {
     id: "kid-judah",
     slug: "judah",
     name: "Judah",
-    emoji: "😎",
+    emoji: "J",
     allowanceAmount: 20,
     buckets: {
       spending: 22.5,
@@ -76,7 +76,7 @@ export const kids: Record<string, Kid> = {
     id: "kid-max",
     slug: "max",
     name: "Max",
-    emoji: "🤘",
+    emoji: "M",
     allowanceAmount: 20,
     buckets: {
       spending: 18,

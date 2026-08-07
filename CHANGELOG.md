@@ -1,3 +1,7 @@
+## Letter Profile Avatars
+
+Replaced Judah and Max's profile emojis with consistent blue `J` and emerald `M` letter avatars across the app and existing cloud family records.
+
 ## Family Readiness Polish
 
 Added parent password and family PIN recovery, blocked local writes when an authenticated cloud account cannot load, protected Available Saving during purchases, escaped family-entered dashboard text, refreshed account wording, and required tests before deployment.

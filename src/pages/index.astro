@@ -38,7 +38,7 @@ import Layout from "../layouts/Layout.astro";
         </fieldset>
 
         <fieldset class="grid gap-3 rounded-2xl bg-blue-50 p-4">
-          <legend class="px-1 font-black text-slate-900">😎 Judah</legend>
+          <legend class="px-1 font-black text-slate-900"><span class="mr-2 inline-grid h-7 w-7 place-items-center rounded-lg bg-blue-600 text-sm text-white">J</span>Judah</legend>
           <div class="grid grid-cols-2 gap-3">
             <label class="text-sm font-bold text-slate-700">PIN<input name="judah" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-blue-100 bg-white px-4 py-3 text-center text-xl tracking-[0.35em] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" /></label>
             <label class="text-sm font-bold text-slate-700">Confirm<input name="judahConfirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-blue-100 bg-white px-4 py-3 text-center text-xl tracking-[0.35em] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" /></label>
@@ -46,7 +46,7 @@ import Layout from "../layouts/Layout.astro";
         </fieldset>
 
         <fieldset class="grid gap-3 rounded-2xl bg-violet-50 p-4">
-          <legend class="px-1 font-black text-slate-900">🤘 Max</legend>
+          <legend class="px-1 font-black text-slate-900"><span class="mr-2 inline-grid h-7 w-7 place-items-center rounded-lg bg-emerald-600 text-sm text-white">M</span>Max</legend>
           <div class="grid grid-cols-2 gap-3">
             <label class="text-sm font-bold text-slate-700">PIN<input name="max" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-violet-100 bg-white px-4 py-3 text-center text-xl tracking-[0.35em] outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" /></label>
             <label class="text-sm font-bold text-slate-700">Confirm<input name="maxConfirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-violet-100 bg-white px-4 py-3 text-center text-xl tracking-[0.35em] outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" /></label>
@@ -62,15 +62,15 @@ import Layout from "../layouts/Layout.astro";
       <div id="profile-mode-note" class="mb-4 hidden rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-800 ring-1 ring-amber-100"></div>
       <h2 id="profile-heading" class="text-center text-xl font-black">Who are you?</h2>
       <div class="mt-4 grid gap-4">
-        <button type="button" data-profile="judah" class="flex items-center gap-4 rounded-3xl bg-white p-6 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"><span class="text-4xl">😎</span><span class="flex-1"><strong class="block text-xl">Judah</strong><span class="text-sm text-slate-500">Check your account</span></span><span class="text-2xl text-slate-300">→</span></button>
-        <button type="button" data-profile="max" class="flex items-center gap-4 rounded-3xl bg-white p-6 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"><span class="text-4xl">🤘</span><span class="flex-1"><strong class="block text-xl">Max</strong><span class="text-sm text-slate-500">Check your account</span></span><span class="text-2xl text-slate-300">→</span></button>
+        <button type="button" data-profile="judah" class="flex items-center gap-4 rounded-3xl bg-white p-6 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"><span class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-blue-600 text-2xl font-black text-white shadow-sm ring-2 ring-blue-200">J</span><span class="flex-1"><strong class="block text-xl">Judah</strong><span class="text-sm text-slate-500">Check your account</span></span><span class="text-2xl text-slate-300">→</span></button>
+        <button type="button" data-profile="max" class="flex items-center gap-4 rounded-3xl bg-white p-6 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"><span class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-emerald-600 text-2xl font-black text-white shadow-sm ring-2 ring-emerald-200">M</span><span class="flex-1"><strong class="block text-xl">Max</strong><span class="text-sm text-slate-500">Check your account</span></span><span class="text-2xl text-slate-300">→</span></button>
       </div>
       <button type="button" data-profile="parent" class="mx-auto mt-8 block rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50">🔒 Parent Dashboard</button>
     </section>
 
-    <section id="pin-unlock" class="mt-10 hidden rounded-3xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-200" aria-labelledby="pin-unlock-heading">
-      <button id="back-to-profiles" type="button" class="float-left rounded-xl px-2 py-1 text-sm font-bold text-slate-500 hover:bg-slate-50">← Back</button>
-      <div id="unlock-emoji" class="clear-both pt-2 text-5xl" aria-hidden="true">🙂</div>
+    <section id="pin-unlock" class="relative mt-10 hidden rounded-3xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-200" aria-labelledby="pin-unlock-heading">
+      <button id="back-to-profiles" type="button" class="absolute left-4 top-6 rounded-xl px-2 py-1 text-sm font-bold text-slate-500 hover:bg-slate-50 sm:left-6">← Back</button>
+      <div id="unlock-emoji" class="mx-auto mt-2 grid h-16 w-16 place-items-center rounded-2xl bg-slate-100 text-3xl font-black text-slate-700" aria-hidden="true">🔒</div>
       <p class="mt-4 text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">Welcome back</p>
       <h2 id="pin-unlock-heading" class="mt-1 text-2xl font-black">Enter your PIN</h2>
 
@@ -117,10 +117,10 @@ import Layout from "../layouts/Layout.astro";
   const client = getSupabaseClient();
   const baseUrl = home?.dataset.baseUrl ?? "/";
   const profileDetails = {
-    parent: { name: "Parent", emoji: "🔒", path: "parent/" },
-    judah: { name: "Judah", emoji: "😎", path: "kids/judah/" },
-    max: { name: "Max", emoji: "🤘", path: "kids/max/" },
-  } satisfies Record<ProfileSlug, { name: string; emoji: string; path: string }>;
+    parent: { name: "Parent", symbol: "🔒", path: "parent/" },
+    judah: { name: "Judah", symbol: "J", path: "kids/judah/" },
+    max: { name: "Max", symbol: "M", path: "kids/max/" },
+  } satisfies Record<ProfileSlug, { name: string; symbol: string; path: string }>;
 
   let account: ParentAccount | null = null;
   let selectedProfile: ProfileSlug = "parent";
@@ -157,7 +157,14 @@ import Layout from "../layouts/Layout.astro";
     blockedUntil = 0;
     window.clearInterval(cooldownTimer);
     if (unlockHeading) unlockHeading.textContent = `${profileDetails[profile].name}'s PIN`;
-    if (unlockEmoji) unlockEmoji.textContent = profileDetails[profile].emoji;
+    if (unlockEmoji) {
+      unlockEmoji.textContent = profileDetails[profile].symbol;
+      unlockEmoji.className = profile === "judah"
+        ? "mx-auto mt-2 grid h-16 w-16 place-items-center rounded-2xl bg-blue-600 text-3xl font-black text-white shadow-sm ring-2 ring-blue-200"
+        : profile === "max"
+          ? "mx-auto mt-2 grid h-16 w-16 place-items-center rounded-2xl bg-emerald-600 text-3xl font-black text-white shadow-sm ring-2 ring-emerald-200"
+          : "mx-auto mt-2 grid h-16 w-16 place-items-center rounded-2xl bg-slate-100 text-3xl font-black text-slate-700";
+    }
     rememberLabel?.classList.toggle("hidden", profile === "parent");
     rememberLabel?.classList.toggle("flex", profile !== "parent");
     forgotPinButton?.classList.toggle("hidden", profile !== "parent");

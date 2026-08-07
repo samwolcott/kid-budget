@@ -61,7 +61,6 @@ const demoJson = JSON.stringify(demoKids);
   >
     <Header
       name={kid.name}
-      emoji={kid.emoji}
       slug={kid.slug as "judah" | "max"}
     />
 
@@ -519,6 +518,7 @@ const demoJson = JSON.stringify(demoKids);
       Transaction,
     } from "../../types";
     import { escapeHtml } from "../../lib/html";
+    import { profileAvatarHtml } from "../../lib/profileAvatar";
 
     import {
       allocateToGoal,
@@ -1180,9 +1180,7 @@ const demoJson = JSON.stringify(demoKids);
       dashboard.innerHTML = `
         <header class="mb-6 flex items-center justify-between gap-4">
           <div class="flex items-center gap-4">
-            <div class="grid h-14 w-14 place-items-center rounded-2xl bg-white text-3xl shadow-sm ring-1 ring-slate-200" aria-hidden="true">
-              ${escapeHtml(kid.emoji)}
-            </div>
+            ${profileAvatarHtml(kid.slug as "judah" | "max", "large")}
 
             <div>
               <p class="text-sm font-bold uppercase tracking-[0.18em] text-blue-600">

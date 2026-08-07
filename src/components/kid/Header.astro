@@ -1,22 +1,22 @@
 ---
 import ProfileControls from "../ProfileControls.astro";
+import { profileAvatarClasses } from "../../lib/profileAvatar";
 
 interface Props {
   name: string;
-  emoji: string;
   slug: "judah" | "max";
 }
 
-const { name, emoji, slug } = Astro.props;
+const { name, slug } = Astro.props;
 ---
 
 <header class="mb-6 flex items-center justify-between gap-4">
   <div class="flex items-center gap-4">
     <div
-      class="grid h-14 w-14 place-items-center rounded-2xl bg-white text-3xl shadow-sm ring-1 ring-slate-200"
+      class={profileAvatarClasses(slug, "large")}
       aria-hidden="true"
     >
-      {emoji}
+      {slug === "judah" ? "J" : "M"}
     </div>
 
     <div>
